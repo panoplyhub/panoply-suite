@@ -1,0 +1,5 @@
+-- Hearthpath (old saved data): the stand-in that Panoply Suite's installer puts in the old Hearthpath folder.
+-- It runs no code. Its TOC names the four old saved-data tables (HearthpathDB, HearthpathAuctionDB,
+-- HearthpathReportsDB and, per character, HearthpathCharDB), so the game keeps loading your old
+-- WTF/.../SavedVariables/Hearthpath.lua files. Panoply Suite (Core/Migrate.lua) copies them across once,
+-- checks the copy, and never changes them. Keep this add-on: without it the old data cannot load.

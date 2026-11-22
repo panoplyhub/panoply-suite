@@ -1,0 +1,13 @@
+## Interface: 16001, 16002
+## Title: Panoply Suite (saved guide progress)
+## Notes: Keeps the guide progress and settings saved by earlier Panoply Suite versions loading. Runs no code. Keep it turned on.
+## Author: Panoply Suite
+## X-Publisher: Ostrowski Holdings LLC
+## Version: 0.9.8
+## X-License: GPL-3.0-only (see ../PanoplySuite/LICENSE)
+## SavedVariables: PolestarDB
+## SavedVariablesPerCharacter: PolestarCharDB
+## X-Panoply-StandIn: 1
+# Written by tools/update_polestar_engine.py: do not edit by hand. StandIn.lua holds only comments: nothing runs from here.
+
+StandIn.lua

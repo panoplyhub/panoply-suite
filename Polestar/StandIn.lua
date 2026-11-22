@@ -1,0 +1,6 @@
+-- Panoply Suite (saved guide progress): the stand-in Panoply Suite's installer puts in the old "Polestar" folder.
+-- It runs no code. Its TOC names the guide engine's two saved-data tables (PolestarDB and, per character,
+-- PolestarCharDB), so the game keeps loading the old WTF/.../SavedVariables/Polestar.lua files that Panoply Suite
+-- 0.9.0 to 0.9.4 saved. Panoply Suite (Core/Bundle.lua) takes each table over once, when it has none of its own yet.
+-- Panoply Suite never edits the old files; the game writes them back at log out (the same tables), so going back to an
+-- earlier version finds them. Keep this add-on while some characters have not logged in since the update.

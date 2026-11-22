@@ -1,0 +1,43 @@
+## Interface: 16001, 16002
+## Title: Panoply Suite Quest Data
+## Notes: Quest, NPC, object, item, zone, profession, gathering and class trainer data for Panoply Suite, generated from the VMaNGOS world database.
+## Author: Panoply Suite
+## Version: 0.9.8
+## DefaultState: enabled
+## X-License: GPL-3.0-only (see LICENSE and NOTICE.md)
+## X-Flavor: fallback
+## ExcludeLoadGameType: standard, tbc, wrath, cata, mists, plunderstorm, wowhack
+
+Core.lua
+Data\Zones.lua
+Data\Quests.lua
+Data\Npcs.lua
+Data\Objects.lua
+Data\Items.lua
+Data\Locations.lua
+Data\Fixes.lua
+Forever.lua
+Data\ForeverZones.lua
+Professions\World.lua
+Professions\Alchemy.lua
+Professions\Blacksmithing.lua
+Professions\Cooking.lua
+Professions\Enchanting.lua
+Professions\Engineering.lua
+Professions\FirstAid.lua
+Professions\Fishing.lua
+Professions\Forever.lua
+Professions\Herbalism.lua
+Professions\Leatherworking.lua
+Professions\Mining.lua
+Professions\Skinning.lua
+Professions\Tailoring.lua
+Professions\WorldExtra.lua
+Gathering\Nodes.lua
+Trainers\Classes.lua
+Maps\Instances.lua
+Maps\Extras.lua
+Maps\Landmarks.lua
+Loot\Loot.lua
+Loot\Bosses.lua
+Gear\Gear.lua

@@ -1,0 +1,13 @@
+## Interface: 16001, 16002
+## Title: Panoply Suite Plans
+## Notes: Saved data for Panoply Suite. Does nothing on its own.
+## Author: Panoply Suite
+## X-Publisher: Ostrowski Holdings LLC
+## Version: 0.9.8
+## DefaultState: enabled
+## X-License: GPL-3.0-only (see LICENSE)
+## X-Flavor: WoW Forever (Camelot)
+
+Plans.lua
+Tickets.lua
+Prices.lua

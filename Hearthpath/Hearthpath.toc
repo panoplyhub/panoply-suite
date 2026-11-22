@@ -1,0 +1,14 @@
+## Interface: 16001, 16002
+## Title: Hearthpath (old saved data)
+## Notes: Keeps your old Hearthpath settings and records loading for Panoply Suite. Runs no code. Keep it turned on.
+## Author: Panoply Suite
+## X-Publisher: Ostrowski Holdings LLC
+## Version: 0.9.8
+## X-License: GPL-3.0-only (see ../PanoplySuite/LICENSE)
+## SavedVariables: HearthpathDB, HearthpathAuctionDB, HearthpathReportsDB
+## SavedVariablesPerCharacter: HearthpathCharDB
+## X-Panoply-StandIn: 1
+## X-Flavor: fallback
+## ExcludeLoadGameType: standard, tbc, wrath, cata, mists, plunderstorm, wowhack
+
+StandIn.lua

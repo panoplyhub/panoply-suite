@@ -1,0 +1,10 @@
+<Bindings>
+  <Binding name="HEARTHPATH_MENU" header="HEARTHPATH">Panoply.Menu:Toggle()</Binding>
+  <Binding name="HEARTHPATH_TOGGLE">Panoply.UI:Toggle()</Binding>
+  <Binding name="HEARTHPATH_NEXT">Panoply.Engine:Next()</Binding>
+  <Binding name="HEARTHPATH_PREV">Panoply.Engine:Prev()</Binding>
+  <Binding name="HEARTHPATH_REPLAN">Panoply:Replan("key")</Binding>
+  <Binding name="PANOPLY_BACK">Panoply.History:Back()</Binding>
+  <Binding name="PANOPLY_FORWARD">Panoply.History:Forward()</Binding>
+  <Binding name="CLICK HearthpathQuestItemNearest:LeftButton"/>
+</Bindings>

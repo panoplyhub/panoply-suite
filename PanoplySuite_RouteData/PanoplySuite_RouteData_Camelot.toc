@@ -1,0 +1,12 @@
+## Interface: 16001, 16002
+## Title: Panoply Suite Route Data
+## Notes: Flight paths, ships, zeppelins, tram and inns for Panoply Suite's route planner (wago.tools client tables + VMaNGOS).
+## Author: Panoply Suite
+## Version: 0.9.8
+## DefaultState: enabled
+## LoadOnDemand: 1
+## X-License: GPL-3.0-only (see LICENSE and NOTICE.md)
+## X-Flavor: WoW Forever (Camelot)
+
+Core.lua
+Forever.lua

@@ -1,0 +1,155 @@
+# Panoply Suite - third-party notices
+
+## Fonts (Media/Fonts/)
+Panoply Suite bundles these fonts. Each is licensed under the SIL Open Font License, Version 1.1;
+the full licence text ships next to the font files. The Lato files are unmodified. Spectral SC
+SemiBold is a modified version (as OFL 1.1 allows; Spectral has no Reserved Font Name): its
+character map points each letter straight at the font's own small-cap glyph, because the game does
+not apply the OpenType feature that normally does this. No glyph was changed or added
+(`tools/make_skin3.py`, bake_small_caps). The modified font stays under the SIL OFL 1.1.
+
+| File | Font | Copyright | Licence |
+| --- | --- | --- | --- |
+| SpectralSC-SemiBold.ttf | Spectral SC SemiBold | Copyright 2017 The Spectral Project Authors (https://github.com/productiontype/Spectral) | SIL OFL 1.1, `Media/Fonts/SpectralSC-OFL.txt` |
+| Lato-Medium.ttf, Lato-SemiBold.ttf, Lato-Bold.ttf | Lato Medium / SemiBold / Bold | Copyright (c) 2010-2014 by tyPoland Lukasz Dziedzic (team@latofonts.com), Reserved Font Name "Lato" | SIL OFL 1.1, `Media/Fonts/Lato-OFL.txt` |
+
+The fonts are used only for drawing Panoply Suite's own interface text. They are not sold on their own.
+
+## Artwork (Media/)
+The panels, brass trim and corner caps (Media/V3), the J line icons (Media/Icons/J), the map pins
+(Media/Pins), the crest and minimap button (Media/Crest.tga, Media/MinimapIcon.tga) are our own
+Panoply Suite v3 artwork (hearthpath-brand final-v3), converted to TGA by `tools/make_skin3.py`.
+Everything else in Media/ was drawn for Panoply Suite. Item, ability, quest and bag pictures are always
+the game's own built-in textures, read from the client at runtime; none are shipped.
+
+## Spec & Trainer data (0.7.0, Modules/SpecTrainer/)
+- `Data/TalentData.lua` (talent trees: talent names, positions, ranks, requirements, icons) is generated
+  by Panoply Suite's own `tools/build_spectrainer_data.py` from World of Warcraft client tables (Talent,
+  TalentTab, SpellName, Spell, SpellMisc), CSV exports from https://wago.tools for Classic Era
+  1.15.9.70576 and WoW Forever 1.60.1.70707. World of Warcraft (c) Blizzard Entertainment.
+- `Specs.lua` (the ready-made specs and their reasons) is Panoply Suite's own write-up. No talent build,
+  wording or data from any other add-on or website was used.
+- Class trainer costs and levels come from the VMaNGOS world database and ship in the data add-on
+  PanoplySuite_QuestData (`Trainers/Classes.lua`, see its NOTICE.md), not here.
+
+## Licence (0.8.0; whole suite since Nov 12 2026)
+The whole of Panoply Suite is distributed under the GNU General Public License version 3 only (GPL-3.0-only): this
+folder, the data add-ons `PanoplySuite_QuestData` and `PanoplySuite_RouteData`, the `PanoplySuite_Plans` add-on and
+the `Hearthpath` stand-in. Each folder carries the licence in its own `LICENSE`. Panoply Suite's own code, text and
+artwork are Copyright (C) 2026 Ostrowski Holdings LLC. The fonts keep the SIL Open Font License 1.1 (above).
+The whole suite has to be version 3 because the leveling guides (below) are Polestar's GPL-3.0-only text.
+- **VMaNGOS** (the data add-ons are derived from its world database): (c) the VMaNGOS contributors,
+  https://github.com/vmangos/core. Its source files say it is licensed under the GNU GPL "either version 2 of the
+  License, or (at your option) any later version", and its repository's LICENSE is the GPL version 2 text, which
+  says no "only". Panoply Suite takes the "later version" option and uses that data under version 3. Checked
+  2026-11-12 against the repository (`LICENSE`, `src/game/Objects/Player.cpp`, `src/mangosd/Main.cpp`); the world
+  database files themselves carry no notice of their own. Until Nov 12 2026 the data add-ons were labelled
+  GPL-2.0-only; that "only" was our own wording, not VMaNGOS's.
+
+## Polestar, bundled (WoW Forever only; Nov 2026; repackaged inside Panoply Suite's folders since 0.9.5)
+On WoW Forever the leveling guide, the walking routes, the arrow's target and the travel plan come from **Polestar** by
+Fitz and the Polestar authors, which ships inside the Panoply Suite package. Thank you, Fitz.
+- **What:** Polestar release **v0.3.7.2**, revision `19bd636e7d6f33231770f6029c76d2d4dfc63798` (2026-11-12),
+  https://github.com/fitzforge/polestar, Copyright (c) 2026 The Polestar authors. Every folder of that release's `addon/`
+  directory, 592 files: `Polestar`, `Polestar_Nav`, `Polestar_Nav_EK`, `Polestar_Nav_Kalimdor`, `Polestar_Guides`,
+  `Polestar_Guides_Alliance`, `Polestar_Guides_Horde`, the nine race guide folders (`Polestar_Guides_Human` ...
+  `Polestar_Guides_Troll`, each with `Legs.lua`), the nine language folders (`Polestar_deDE` ... `Polestar_zhTW`),
+  `Polestar_ItemDB` and `Polestar_Recorder`.
+- **Where (0.9.5):** the game's AddOns list showed those 27 folders as 27 rows, so they now ship inside Panoply Suite's
+  own folders, each folder whole and under its own name: `PanoplySuite/Polestar/<folder>/` for all but the languages,
+  `PanoplySuite_Languages/<folder>/` (a load-on-demand add-on) for the nine language folders. A folder called `Polestar`
+  that holds only a TOC and a README is Panoply Suite's saved-data stand-in (it keeps the old saved guide progress
+  loading), not Polestar.
+- **Packaging changed, and the files `Polestar/PANOPLY-CHANGES.md` lists:** apart from those listed changes and two fixed,
+  mechanical packaging rules, no file's content is changed, and no file is renamed, added or left out. Every Lua file a Polestar TOC loads gets one wrapper on its first and
+  last line (`PanoplySuiteBundle.File("<folder>", "<path>", function(...)` ... `end)`) so it runs under its own folder's
+  name, at the moment the game would have run it (`Core/Bundle.lua`, Panoply Suite's own loader); and in those files the
+  folder name in a picture, font or sound path (`"Interface\\AddOns\\" .. NAME .. ...`) is looked up through
+  `PanoplySuiteBundle.Dir(NAME)`, because the folder moved. Everything else (pictures, sounds, fonts, licences, credits,
+  TOC and XML files), apart from the files `PANOPLY-CHANGES.md` lists, is byte for byte Polestar's. The XML files only list Lua files; Panoply Suite's WoW Forever TOCs
+  list the same files in the same order. `tools/polestar_engine_manifest.json` lists the sha256 of every file of
+  Polestar's release, and `python3 tools/update_polestar_engine.py --check` (run by the test suite and by the release
+  build) undoes the two rules and compares every file with it, and with the download when there is one. Polestar's key
+  bindings file (`Bindings.xml`, which the game reads only from an add-on's top folder) is shipped but not active.
+- **Licences, as Polestar's own files state them:**
+  - `Polestar`, the guide folders, the language folders, `Polestar_ItemDB`, `Polestar_Recorder`: **GPL-3.0-only**
+    (each TOC's `X-License`). Polestar's main folder carries no licence file of its own, so Polestar's `LICENSE`
+    (the GNU GPL version 3), `LICENSE-EXCEPTION.md` and `THIRD_PARTY.md` are copied, unchanged, into
+    `Licenses/Polestar/` of this folder.
+  - `Polestar_Nav`, `Polestar_Nav_EK`, `Polestar_Nav_Kalimdor`: **GPL-3.0-or-later** (`Polestar/Polestar_Nav/LICENSE`,
+    `Polestar/Polestar_Nav/CREDITS.md`). The walking router: "Polestar's walking router started from Shortest Path Forever
+    v1.16.0 by Cillian Berragan, with thanks; Polestar maintains it since 2026-10-16" (Polestar_Nav/CREDITS.md);
+    Shortest Path Forever, https://github.com/cjber/shortest-path-forever, GPL-3.0-or-later, Copyright (C) 2026
+    Cillian Berragan. His copyright notices stay in the files that carry them (`Polestar_Nav/Routing/`, and the files of
+    `Polestar/` that CREDITS.md lists as adapted from his work).
+  - **Leffe's navigation maps:** the walking maps in `Polestar_Nav`, `Polestar_Nav_EK` and `Polestar_Nav_Kalimdor`
+    (maps format 5) are, in Polestar's words, "Leffe's navigation maps, condensed for the game ... with his permission",
+    and the walks baked into the race guide folders (`Legs.lua`) were drawn on Leffe's navigation maps and are
+    published by Polestar "with his permission and the credit 'Leffe's navigation maps'" (Polestar's THIRD_PARTY.md).
+    Credit: **Leffe's navigation maps**. Leffe's permission was given to Polestar's author; Panoply Suite ships these
+    files only as part of Polestar's release, content unchanged (repackaged as above), under the licence Polestar
+    publishes them under.
+  - Data notices (`LICENSE-DATA.txt` in the guide, language and item folders and in `Polestar/Gear/`, `CREDITS.md` in
+    the language folders) and the font licences in `Polestar/Media/Fonts/` ship where Polestar put them, inside the
+    folders above.
+- **How Panoply Suite uses it:** `Core/Bundle.lua` (Panoply Suite's own code, GPL-3.0-only) runs Polestar's files: each
+  folder under its own name and private table, at the moments the game used (Polestar's main folder as Panoply Suite
+  loads, its guides and Recorder right after it starts, the load-on-demand folders when Polestar asks for them), and it
+  answers Polestar's own questions about its add-on folders from their TOCs. `Engine/PolestarEngine.lua` (Panoply
+  Suite's own code) calls Polestar's functions; neither copies any of Polestar's code. It keeps Polestar's own windows,
+  arrow and buttons hidden through Polestar's own switch and draws Polestar's step, arrow target and route in Panoply
+  Suite's windows. It sets four of Polestar's settings (its minimap button, its game menu button, automatic quest
+  accept and hand-in) and keeps what each was. Polestar keeps its own saved data under its own names (`PolestarDB`,
+  `PolestarCharDB`, `PolestarRecorderDB`, `PolestarRecorderCharDB`), saved with Panoply Suite's since 0.9.5; the
+  stand-in keeps the older saved files loading so each character's progress is taken over once.
+- **With the real Polestar installed too:** a full Polestar in its own folders, newer than the bundled one, is kept by
+  Panoply Suite's installers, and in the game it runs instead of the bundled copy (`Core/Bundle.lua` stays off).
+- **Classic Era:** Polestar does not load there. The guides converted from Polestar's guide text (next section) and
+  Panoply Suite's own engine, router and route data are what runs, as before.
+- **To update:** `python3 tools/update_polestar_engine.py --src <Polestar checkout>` (see the tool's notes); after a
+  Panoply Suite version bump, `python3 tools/update_polestar_engine.py --refresh`.
+
+## Leveling guides converted from Polestar's guide text (0.8.0, Data/Guides/; Classic Era, and WoW Forever without Polestar)
+- **Source:** Polestar, https://github.com/fitzforge/polestar, Copyright (c) 2026 The Polestar authors, licensed under
+  the GNU General Public License version 3 (Polestar's `package.json`: `GPL-3.0-only`). Only Polestar's own WoW Forever
+  leveling guide text was used: `guides/forever/alliance/**.guide` and `guides/forever/horde/**.guide`, 65 guides (every
+  race's start, then the shared Alliance and Horde guides; what each race's guides cover is listed guide by guide in
+  `docs/launch/GUIDE-COVERAGE.md` of the Panoply Suite repository), Polestar release **v0.3.7.2**, revision
+  `19bd636e7d6f33231770f6029c76d2d4dfc63798` (2026-11-12). The exact release and revision are also written in the header of
+  every generated file and in `Data/Guides/Index.lua` (`source.release`, `source.revision`).
+- **Not used in the converted guides:** Polestar's add-on code, compiled guide packs, UI, arrow, navigation, engine,
+  frames, art, data folders and tools (those ship unedited in Polestar's own folders, section above, and are not part of
+  this conversion). Polestar's `LICENSE-EXCEPTION.md`
+  (the additional permission for guide packs made by its compiler) does not cover guide text copied from Polestar's own
+  guides, and is not relied on: the guide text is used under the GPL-3.0 itself, which is Panoply Suite's licence too.
+- **Changes made (a modified version, GPL section 5):** the `.guide` text was parsed by Panoply Suite's own converter,
+  `tools/convert_polestar_guides.py`, into Lua tables: zone names given map ids from Panoply Suite's own client table
+  (`tools/cache/forever_UiMap.csv`), coordinates written as 0-1 fractions, race names written as the client's race file
+  names. Steps, goals, quest/NPC/object/item ids, coordinates, `only` and `when` conditions, tips and notes are kept.
+  Panoply Suite's own step engine (`Engine/Guides.lua`) follows them; where it cannot act on a construct, the data still
+  carries it and `docs/guides/POLESTAR-CONVERSION-REPORT.txt` counts it.
+- **To convert again** (e.g. a newer Polestar revision): clone Polestar outside the add-on folders, then
+  `python3 tools/convert_polestar_guides.py --src <checkout> --report docs/guides/POLESTAR-CONVERSION-REPORT.txt`.
+  The converter refuses a checkout whose LICENSE is no longer the GPL version 3. Polestar's add-on folders are copied into
+  `addon/` only by `tools/update_polestar_engine.py` (section above), never by hand.
+- **Facts Polestar's guides rest on:** Polestar's own THIRD_PARTY.md (Licenses/Polestar/) names the sources of its quest,
+  NPC, object and item facts. Panoply Suite's converter copies none of those data files:
+  the converted guides carry only what is written in the guide text (ids, coordinates, quoted names, tips and notes).
+  In the game, quest, NPC and item names and quest-giver / objective positions are looked up in Panoply Suite's own
+  quest data first; a name or coordinate written in the guide text is used where the guide gives one or our data has none.
+
+## Hunter pet facts (0.8.4, Modules/HunterPet/)
+- Abilities, ranks, pet levels, spell ids and which family can use what come from World of Warcraft
+  client tables (SkillLineAbility, SpellName, Spell, SpellLevels), CSV exports from
+  https://wago.tools. World of Warcraft (c) Blizzard Entertainment.
+- Training-point costs, family diets and the wild beasts reported to know a rank come from Panoply
+  Suite's research ledger (9 Nov 2026). That ledger drew on ForeverChanges
+  (https://foreverchanges.pro/hunter-pets), official Blizzard forums, Mmonster, WoWFDB and 60.tools,
+  and on player teacher reports from community forums collected by ForeverChanges. No coordinates are
+  stored in this data.
+
+## Game facts
+All game facts belong to Blizzard Entertainment. We credit every outside source we used. This tree
+contains no code, guide text or data from any other add-on or website beyond the sources credited
+here. The Polestar leveling guides
+(above) are the exception already described: that guide text is used under the GNU GPL version 3.
