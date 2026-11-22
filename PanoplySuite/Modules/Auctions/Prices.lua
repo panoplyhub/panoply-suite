@@ -250,17 +250,19 @@ local function hubHouse(f, id)
 end
 -- The houses for this character: its realm's house for its faction (the neutral house while one is open), the realm's
 -- one list when it has no faction houses, then the region-wide commodities.
+-- this character's realm in the file's realms map: the entry, and the name it is listed under
+local function hubRealm(f)
+  local tries = { C.pc(_G.GetRealmName), C.pc(_G.GetNormalizedRealmName) }
+  for _, n in ipairs(tries) do if n and type(f.realms[n]) == "table" then return f.realms[n], n end end
+  local want = {}
+  for _, n in ipairs(tries) do if n then want[norm(n):lower()] = true end end
+  for k, v in pairs(f.realms) do if type(k) == "string" and type(v) == "table" and want[norm(k):lower()] then return v, k end end
+  return nil
+end
 function P.HubHouses()
   local f = P.HubFile()
   if not f then return {} end
-  local entry
-  local tries = { C.pc(_G.GetRealmName), C.pc(_G.GetNormalizedRealmName) }
-  for _, n in ipairs(tries) do if n and type(f.realms[n]) == "table" then entry = f.realms[n] break end end
-  if not entry then
-    local want = {}
-    for _, n in ipairs(tries) do if n then want[norm(n):lower()] = true end end
-    for k, v in pairs(f.realms) do if type(k) == "string" and type(v) == "table" and want[norm(k):lower()] then entry = v break end end
-  end
+  local entry = hubRealm(f)
   local out = {}
   if entry then
     local h, at = hubHouse(f, entry[P.Faction()])
@@ -270,6 +272,39 @@ function P.HubHouses()
   local c, cat = hubHouse(f, f.commodities)
   if c then out[#out + 1] = { c, cat } end
   return out
+end
+-- 0.9.9.2: has Panoply Hub found this character's auction house? Panoply Hub works it out from the scans saved in the game (Record.lua,
+-- house[...]) and lists the house in the realms map; a house it only guessed (the busiest of the faction) is named in the file's
+-- `guessed` table and does not count. Returns the line for the Auctions page and whether the house was found.
+P.HOUSE_FOUND = "Your auction house: %s, %s"
+P.HOUSE_FOUND_ONE = "Your auction house: %s"
+-- three honest states: matched; a scan of this realm + faction is saved but Hub has not matched it yet; no scan yet
+P.HOUSE_NOT_FOUND = "Open the auction house once so Panoply Hub can find your house."
+P.HOUSE_NOT_FOUND_SHORT = "Open the auction house once to find your house."   -- a narrow window, where the line above would be cut off
+P.HOUSE_SCANNED = "Scan saved. Panoply Hub will match your auction house."
+P.HOUSE_SCANNED_SHORT = "Scan saved. Hub will match your house."
+-- returns the line, whether the house was found, the shorter line for a narrow window, and the state ("matched", "scanned", "none")
+function P.HubHouseLine()
+  local f = P.HubFile()
+  local realm, name
+  if f then realm, name = hubRealm(f) end
+  if realm then
+    local faction = P.Faction()
+    local id = realm[faction]
+    local shownFaction = faction
+    if not id then id, shownFaction = realm.All, nil end
+    local guessed = type(f.guessed) == "table" and type(f.guessed[name]) == "table" and f.guessed[name][shownFaction or "All"]
+    if id and not guessed and hubHouse(f, id) then
+      local shown = C.pc(_G.GetRealmName) or P.RealmName()
+      local line = shownFaction and P.HOUSE_FOUND:format(shownFaction, shown) or P.HOUSE_FOUND_ONE:format(shown)
+      return line, true, line, "matched"
+    end
+  end
+  local db = _G.PanoplySuiteAuctionDB
+  if type(db) == "table" and type(db.house) == "table" and type(db.house[P.Key()]) == "table" then
+    return P.HOUSE_SCANNED, false, P.HOUSE_SCANNED_SHORT, "scanned"
+  end
+  return P.HOUSE_NOT_FOUND, false, P.HOUSE_NOT_FOUND_SHORT, "none"
 end
 function P.FromHub(id)
   if type(id) ~= "number" then id = tonumber(id) end

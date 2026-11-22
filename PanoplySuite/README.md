@@ -1,10 +1,10 @@
-# Panoply Suite 0.9.8
+# Panoply Suite 0.9.9.3
 
 A personal leveling and professions guide for **WoW Forever**, for Alliance and Horde.
 Since 0.9.7 Panoply Suite is for WoW Forever only.
 
 ## Install
-**Easiest:** download `PanoplySuite-0.9.8-Setup.zip`, unzip it, quit WoW and
+**Easiest:** download `PanoplySuite-0.9.9.3-Setup.zip`, unzip it, quit WoW and
 double-click **Install Panoply Suite (Windows).bat** or **Install Panoply Suite (Mac).command** (on a Mac
 right-click > Open the first time). It installs or updates all three folders, `PanoplySuite`,
 `PanoplySuite_QuestData` and `PanoplySuite_RouteData`. It finds WoW, backs up your old Panoply Suite folders and WTF folder to

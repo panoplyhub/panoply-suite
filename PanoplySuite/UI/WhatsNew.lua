@@ -25,6 +25,10 @@ local SP, TH = Skin.SP, Skin.TextHeight
 
 WN.NOTES = {
   { version = "0.7.3.6", lines = {} },       -- released: nothing to add
+  { version = "0.9.9.3", lines = {} },       -- Nov 22 2026: Hub: carried-over Horde house removed; old 0.9.9.1 pick no longer used; nothing to add (any text is approved first)
+  { version = "0.9.9.2", lines = {} },       -- Nov 22 2026: your auction house is found automatically; nothing to add (any text is approved first)
+  { version = "0.9.9.1", lines = {} },       -- Nov 21 2026: Polestar 0.4.2.1 (walking arrow fixed, guide fixes); nothing to add (any text is approved first)
+  { version = "0.9.9", lines = {} },         -- Nov 21 2026: Polestar 0.4.2 (the guide engine); nothing to add (any text is approved first)
   { version = "0.9.8", lines = {} },         -- Nov 21 2026: some game data was taken out; nothing to add (we approves any text first)
   -- 0.9.7 (Nov 18 2026, WoW Forever only): Classic out of the product, the levelling styles replaced by one Group quests setting,
   -- partner levelling with the class-quest hold, the guide picker. Shown from the build whose version is 0.9.7 (a note newer than

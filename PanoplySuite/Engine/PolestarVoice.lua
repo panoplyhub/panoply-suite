@@ -183,7 +183,7 @@ local mine = setmetatable({}, { __mode = "k" })      -- the functions this file 
 -- every entry point this file changes, by name: tests/polevoice_tests.lua fails when one of these is not wrapped with the bundled Polestar
 V.EXPECT = { "Print", "L", "Widgets.Tooltip", "Hooks.AddLine", "PartyChat.MarkerToken", "PartyChat.ICON", "SlashCmdList.POLESTAR",
   "SlashCmdList.POLESTARREC", "Polestar_OnAddonCompartmentClick", "Polestar_OnAddonCompartmentEnter", "Polestar_OnAddonCompartmentLeave",
-  "BINDING_NAME_POLESTAR_HIDE", "BINDING_NAME_POLESTAR_OPTIONS", "BINDING_TAG_POLESTAR", "UI.settingsCategory" }
+  "BINDING_NAME_POLESTAR_HIDE", "BINDING_NAME_POLESTAR_OPTIONS", "UI.settingsCategory" }   -- 0.9.9: no BINDING_TAG_POLESTAR (Polestar 0.4.2 removed it)
 
 local function note(name, ok, why)
   if ok then V.wrapped[name], V.skipped[name] = true, nil else V.wrapped[name], V.skipped[name] = nil, why or "missing" end
@@ -361,7 +361,7 @@ local function settingsCategory(p)
   return true
 end
 
-local BINDINGS = { "BINDING_TAG_POLESTAR", "BINDING_NAME_POLESTAR_TOGGLE", "BINDING_NAME_POLESTAR_HIDE", "BINDING_NAME_POLESTAR_NEXT",
+local BINDINGS = { "BINDING_NAME_POLESTAR_TOGGLE", "BINDING_NAME_POLESTAR_HIDE", "BINDING_NAME_POLESTAR_NEXT",
   "BINDING_NAME_POLESTAR_PREV", "BINDING_NAME_POLESTAR_FOCUS", "BINDING_NAME_POLESTAR_MENU", "BINDING_NAME_POLESTAR_OPTIONS",
   "BINDING_NAME_POLESTAR_REPORT", "BINDING_NAME_POLESTAR_NEXT_WAYPOINT", "BINDING_NAME_POLESTAR_PREV_WAYPOINT", "BINDING_NAME_POLESTAR_REOPEN_TAB",
   "BINDING_NAME_POLESTAR_RECORDER_TRAIL", "BINDING_NAME_POLESTAR_RECORDER_WINDOW" }
@@ -460,7 +460,7 @@ function V:Install()
   note("UI.settingsCategory", sok and type(p.UI) == "table" and type(p.UI.settingsCategory) == "table", "missing")
   -- key bindings: the labels Polestar set at load
   bindings()
-  for _, g in ipairs({ "BINDING_NAME_POLESTAR_HIDE", "BINDING_NAME_POLESTAR_OPTIONS", "BINDING_TAG_POLESTAR" }) do
+  for _, g in ipairs({ "BINDING_NAME_POLESTAR_HIDE", "BINDING_NAME_POLESTAR_OPTIONS" }) do
     note(g, type(rawget(_G, g)) == "string", "missing")
   end
   V.installedFor = p

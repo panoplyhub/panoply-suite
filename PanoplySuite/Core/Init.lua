@@ -4,7 +4,7 @@ local ADDON, Panoply = ...
 Panoply = Panoply or {}
 
 Panoply.name    = "Panoply Suite"
-Panoply.version = "0.9.8"
+Panoply.version = "0.9.9.3"
 Panoply.prefix  = "HPATH1"          -- addon message prefix (<=16 chars)
 Panoply.debugLog = {}
 

@@ -8,7 +8,7 @@ It is for **WoW Forever** now. Classic support is coming later.
 
 ## Install
 
-1. Download the release zip (`PanoplySuite-0.9.8.zip`).
+1. Download the release zip (`PanoplySuite-0.9.9.3.zip`).
 2. Quit World of Warcraft.
 3. Copy the folders `PanoplySuite`, `PanoplySuite_QuestData`, `PanoplySuite_RouteData`,
    `PanoplySuite_Plans` and `PanoplySuite_Languages` into `_forever_\Interface\AddOns` inside your

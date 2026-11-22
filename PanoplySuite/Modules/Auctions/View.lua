@@ -529,6 +529,7 @@ function View:Build()
   strip.open = Skin.Button(strip, "Open Auction window", 170, 26, function() V.OpenAuctionWindow() end, "Open Auction window", V.WORDS.openTip)
   if strip.open.SetIcon then strip.open:SetIcon("Auctions", 14) end
   strip.note = Skin.Ink(strip, 11, Kit.Color("text.muted"))
+  strip.house = Skin.Ink(strip, 11, Kit.Color("text.muted"))
   -- 2. the tabs
   local items = {
     { key = "prices", label = "Prices", tip = "Prices", tipBody = V.HELP.prices },
@@ -821,6 +822,12 @@ function View:DrawStrip(W, band)
   s.meter:SetProgress(min(1, bytes / R.BUDGET))
   s.meter.tip, s.meter.tipBody = "Saved on this computer", R.MeterText(bytes)
   s.meter:Show()
+  -- 0.9.9.2: which auction house is yours (Panoply Hub finds it from your scans), or what to do so it can
+  local line, found, short = P.HubHouseLine()
+  local token = found and "text.primary" or "text.muted"
+  local tw, hh = word(s, s.house, pad, y2, 11, token, line, inner)
+  if s.house.panoplyCut then tw, hh = word(s, s.house, pad, y2, 11, token, short, inner) end   -- cut off: the short words
+  y2 = y2 - hh - SP.xs
   -- the one View only line
   local nh = para(s, s.note, pad, y2, 11, "text.muted", V.WORDS.viewOnly, inner)
   local h = -y2 + nh + pad

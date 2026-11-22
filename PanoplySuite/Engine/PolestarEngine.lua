@@ -19,7 +19,7 @@ local PS = {}
 Panoply.PolestarEngine = PS
 local floor, sqrt, pi = math.floor, math.sqrt, math.pi
 
-PS.TESTED = "0.3.7.2"            -- the Polestar release this adapter was written and tested against (tools/update_polestar_engine.py)
+PS.TESTED = "0.4.2.1"           -- the Polestar release this adapter was written and tested against (tools/update_polestar_engine.py)
 PS.OWNER = "PanoplySuite"        -- our name for Polestar.Nav.API (a spot picked by hand in Panoply is routed by Polestar too)
 PS.LEVELING_PACK = "guides"      -- Polestar's own guide pack
 PS.ADDED_PACK = "panoply"        -- the pack id a guide added from outside registers under (a Polestar guide pack; none ships yet)
@@ -624,6 +624,35 @@ end
 -- The arrow: where Polestar's own arrow would point
 -------------------------------------------------------------------------------
 -- state, yards, angle (0 = straight ahead, counter-clockwise, 0..2pi; nil when the game gives no facing), other-zone name
+-- 0.9.9 (Nov 21 2026: "Polestar's wording"): what Polestar's own arrow says in the states it added in 0.4.x for a walk it cannot
+-- guide, taken from Polestar's own text table (its words, in the player's language where Polestar has them; the key is the English).
+-- 0.9.9.1 (Polestar 0.4.2.1): the "unsafe" state is gone (the other faction's towns are walked round, with "Hostile town" under the step),
+-- and the underwater state's words are now Polestar's "Under water nearby: swim down to it"; each state here was checked against
+-- Polestar/Nav/Nav.lua (what Nav.Sample returns) and Nav/Arrow.lua (what it shows) of 0.4.2.1.
+-- 0.9.9.1 (review): Polestar's arrow has words in two more states, "water-depth" (the yards below you, a number in the words) and
+-- "arrived-underwater"; they are mapped the same way. What Polestar's arrow DOES in each state (Nav/Arrow.lua setMode / Update): routing shows
+-- the arrow straight at the target with the words; unmapped, submerged and water-depth show the words and no arrow; arrived-underwater shows
+-- its arrival look (no arrow) with the words. PS.STATE_ARROW lists the one state that keeps the arrow.
+PS.STATE_TEXT = { routing = "Finding a walking route", unmapped = "The last steps here aren't mapped",
+                  submerged = "Under water nearby: swim down to it", ["water-depth"] = "%d yd below you: swim down",
+                  ["arrived-underwater"] = "Arrived underwater" }
+PS.STATE_ARROW = { routing = true }
+function PS:StateText(st, yards)
+  local key = self.STATE_TEXT[st]
+  if not key then return nil end
+  local p = P()
+  local L = type(p) == "table" and p.L or nil
+  local ok, text = pcall(function() return L and L[key] end)
+  text = ok and type(text) == "string" and text ~= "" and text or key
+  if text:find("%%d") then
+    -- a text with the yards in it (Polestar rounds the distance: floor(dist + .5)); no number, no words
+    if type(yards) ~= "number" then return nil end
+    local f, out = pcall(string.format, text, math.floor(yards + 0.5))
+    return f and out or nil
+  end
+  return text
+end
+
 function PS:Sample()
   local p = P()
   local st, dist, angle = call(p.Nav.Sample)

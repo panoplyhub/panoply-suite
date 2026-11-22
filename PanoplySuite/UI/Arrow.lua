@@ -385,6 +385,23 @@ function Arrow:UpdatePolestar(t)
     self.tex:Hide(); self.dist:SetText("Head to " .. zone); self.last.otherZone = zone
     return done()
   end
+  local words = Panoply.PolestarEngine:StateText(st, yards)
+  if words then
+    -- 0.9.9: a walk Polestar cannot guide says so in Polestar's own words, on the distance line. 0.9.9.1: as Polestar's own arrow does
+    -- per state: while the walking route is being found ("routing") the arrow points straight at the target (when there is a bearing) with
+    -- the words; in every other worded state (unmapped, submerged, water-depth, arrived-underwater) the words and no arrow
+    self.dist:SetText(words); self.last.stateText = words; self.last.yards = nil
+    if Panoply.PolestarEngine.STATE_ARROW[st] and angle then
+      local col = Skin.colors.arrowFar
+      self.tex:SetVertexColor(col[1], col[2], col[3], 1)
+      setRotation(self.tex, angle) self.tex:Show()
+      self.last.color, self.last.angle = col, angle
+    else
+      self.tex:Hide(); self.last.target = nil
+    end
+    return done()
+  end
+  self.last.stateText = nil
   if st == "instruction" and not (yards and angle) then
     -- a flight, a boat, a portal or the hearthstone with nothing to walk to: the guide window says what to do
     self.tex:Hide(); self.dist:SetText(Arrow.SEE_GUIDE); self.last.target = nil

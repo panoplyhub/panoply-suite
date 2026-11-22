@@ -18,7 +18,7 @@
 --     language folder;
 --   * ADDON_LOADED("<that folder>") is handed to the frames Polestar's files made, at those moments, after the saved data
 --     is in (Panoply Suite's ADDON_LOADED, which comes after PanoplySuite's saved variables, Polestar's among them);
---   * Polestar's own questions about add-ons (C_AddOns, the copy its files see) are answered for its 27 folders from
+--   * Polestar's own questions about add-ons (C_AddOns, the copy its files see) are answered for its folders from
 --     their TOC fields (PanoplySuite/Polestar/Pieces.lua); every other add-on is the game's answer;
 --   * its pictures, fonts and sounds are found in their new folder (Dir);
 --   * Polestar's saved data: PanoplySuite's WoW Forever TOCs list PolestarDB, PolestarCharDB and the Recorder's two, so
@@ -260,13 +260,15 @@ local function fitInstallCheck(core)
   local check = type(D) == "table" and D.CheckInstall
   if type(check) ~= "function" then return end
   D.CheckInstall = function(...)
-    local missing, stale, retired = check(...)
-    if type(missing) ~= "table" then return missing, stale, retired end
+    -- 0.9.9.1: Polestar 0.4.2.1's check returns a fourth value (how many Polestar_Nav_R folders of 0.4.2 are still in the AddOns
+    -- list, which its login code compares with 0); the wrapper hands every value on, not just the first three
+    local missing, stale, retired, regions = check(...)
+    if type(missing) ~= "table" then return missing, stale, retired, regions end
     local kept = {}
     for _, name in ipairs(missing) do
       if folders[name] then kept[#kept + 1] = name end
     end
-    return kept, stale, retired
+    return kept, stale, retired, regions
   end
 end
 

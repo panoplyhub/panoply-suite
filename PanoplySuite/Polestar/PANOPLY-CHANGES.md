@@ -1,6 +1,6 @@
 # Changes Panoply Suite made to Polestar
 
-This folder holds Polestar v0.3.7.2 (revision 19bd636), a guide engine by the Polestar authors, licensed under the
+This folder holds Polestar v0.4.2.1 (revision 4e1cd84), a guide engine by the Polestar authors, licensed under the
 GNU General Public License, version 3 (GPL-3.0-only). Its licence texts are in `PanoplySuite/Licenses/Polestar/`
 (`LICENSE`, `LICENSE-EXCEPTION.md`, `THIRD_PARTY.md`) and in the folders here that carry their own.
 
@@ -104,10 +104,12 @@ the name, in English and in the nine languages:
 
 What changed in the code, file by file:
 
-- `Polestar/QoL/Options.lua`: after Polestar's `C.hideQuestTracker`, a block wraps it so the setting it returns
+- `Polestar_Options/QoL/Options.lua` (in Polestar 0.3.7.2 this was `Polestar/QoL/Options.lua`; 0.4.2 moved the settings into
+  the `Polestar_Options` folder): after Polestar's `C.hideQuestTracker`, a block wraps it so the setting it returns
   carries the reworded help. The setting itself (key `qol.hideQuestTracker`, what it does) is unchanged.
-- `Polestar/UI/QuestieTurnIns.lua`: just before Polestar's own `ns.RegisterOptions` call for the Integrations section,
-  a block wraps `ns.RegisterOptions` for that one call: it puts Polestar's function back at once, swaps the section
+- `Polestar_Options/UI/GuideOptions.lua` (in Polestar 0.3.7.2 this was `Polestar/UI/QuestieTurnIns.lua`; 0.4.2 moved the
+  Integrations section's registration here): just before Polestar's own `register` call for the Integrations section,
+  a block wraps `ns.RegisterOptions` (which `register` calls) for that one call: it puts Polestar's function back at once, swaps the section
   title, label and help for the reworded ones and registers through Polestar's function. The setting
   (`routePlan.questie`, off by default), the check that the add-on is installed, and every hook on its tracker are
   unchanged.
@@ -135,9 +137,38 @@ These blocks are marked with their own name:
 As with the blocks above, deleting every line from a `PANOPLY CHANGE BEGIN` line to its `PANOPLY CHANGE END` line gives
 back Polestar's file byte for byte. No Polestar licence notice, copyright line or credit was changed or removed.
 
+<!-- polestar_update.py: generated section begin (do not edit by hand) -->
+## Marked changes in this copy, file by file
+
+Polestar v0.4.2.1 (revision 4e1cd84). 34 marked changes in 13 files (written by `tools/polestar_update.py` on 2026-11-21; the bundle check counts the same):
+
+| File | Marked changes |
+|---|---|
+| `Polestar/Core/Update.lua` | 8 |
+| `Polestar/Quests/Party.lua` | 6 |
+| `Polestar_Options/QoL/Options.lua` | 1 |
+| `Polestar_Options/UI/GuideOptions.lua` | 1 |
+| `Polestar_deDE/Interface.lua` | 2 |
+| `Polestar_esES/Interface.lua` | 2 |
+| `Polestar_esMX/Interface.lua` | 2 |
+| `Polestar_frFR/Interface.lua` | 2 |
+| `Polestar_koKR/Interface.lua` | 2 |
+| `Polestar_ptBR/Interface.lua` | 2 |
+| `Polestar_ruRU/Interface.lua` | 2 |
+| `Polestar_zhCN/Interface.lua` | 2 |
+| `Polestar_zhTW/Interface.lua` | 2 |
+<!-- polestar_update.py: generated section end -->
+
+## Folders of Polestar's release that are not included (Panoply Suite 0.9.9)
+
+Panoply Suite carries Polestar 0.4.2 without these folders of its release: `Polestar_Arcade`, `Polestar_Experimental`,
+`Polestar_Looks`, `Polestar_SkinAPI` and the ten `Polestar_Skin_*` folders. No file of Polestar's code was edited to leave
+them out: Polestar looks for these folders when it needs them and runs without them (the list is in
+`tools/update_polestar_engine.py`, `EXCLUDED_FOLDERS`). Every other folder of the release is included.
+
 ## Everything else is unchanged
 
-Apart from the files above, every file here is Polestar's v0.3.7.2 release unchanged, except for the packaging that
+Apart from the files above, every file here is Polestar's v0.4.2.1 release unchanged, except for the packaging that
 lets it load from inside Panoply Suite's folders. That packaging is described at the top of
 `tools/update_polestar_engine.py` in Panoply Suite's source: each Lua file is wrapped on its first and last line,
 and the paths to Polestar's pictures, fonts and sounds point at their new folder.

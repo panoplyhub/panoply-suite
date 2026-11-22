@@ -3,7 +3,7 @@
 ## Notes: Keeps the guide progress and settings saved by earlier Panoply Suite versions loading. Runs no code. Keep it turned on.
 ## Author: Panoply Suite
 ## X-Publisher: Ostrowski Holdings LLC
-## Version: 0.9.8
+## Version: 0.9.9.3
 ## X-License: GPL-3.0-only (see ../PanoplySuite/LICENSE)
 ## SavedVariables: PolestarDB
 ## SavedVariablesPerCharacter: PolestarCharDB

@@ -14,6 +14,10 @@
 --       saved); "ago" = whole days before this scan (1 to 13), one point a day, the newest scan of a day standing for it.
 --   snaps[realm-faction]  the OLD per-auction scans (0.7.4 to 0.9.4). Read once into agg (R.Migrate) and kept, untouched, until a new
 --                         scan of the same realm + faction replaces it (as 0.9.4 itself would have); nothing new is written there.
+--   house[realm-faction] = { v = 1, t, realm, group, faction, full, connected, rows = "itemId,lowest,qty;..." }   (0.9.9.2) a small
+--                         sample (at most R.HOUSE_ROWS items, the ones with the most listings) of each finished scan that was saved, so Panoply
+--                         Hub, which can see the game's save files but not which auction house you stood at, can work out which of Blizzard's
+--                         auction houses is yours. Read only use of the scan; at most R.HOUSE_KEEP realm-factions.
 --   rec[realmGroup][character] = { f = faction, seen = time, mail = { "subject|minute" ... },
 --                                  listed / sold / bought / unsold = { "csv row", ... } }
 -- Rows are text, not tables: a Lua table per item costs several times more in the saved file and in memory.
@@ -564,9 +568,70 @@ function R.TrimScans(keep)
   local raw = R.OldSnaps()
   for _, k in ipairs(list) do
     if #list - dropped <= R.MAX_SNAPS then break end
-    if k ~= keep then snaps[k] = nil if raw then raw[k] = nil end dropped = dropped + 1 end
+    if k ~= keep then snaps[k] = nil R.DropFingerprint(k) if raw then raw[k] = nil end dropped = dropped + 1 end
   end
   return dropped
+end
+
+-- 0.9.9.2: the house fingerprint of a scan that was just saved (see the header: house[realm-faction]). Plain items only, one price
+-- and one quantity each; the items with the most listings first (their lowest price and quantity say most about WHICH house it is), then
+-- the larger quantity, then the lower item id, so the same scan always gives the same sample.
+R.HOUSE_ROWS = 300
+R.HOUSE_KEEP = 6
+function R.Houses()
+  local db = P.DB()
+  if type(db.house) ~= "table" then db.house = {} end
+  return db.house
+end
+-- the other realms that share this one's auction houses (normalised, ";" between), "" when it has none
+local function connectedRealms()
+  local list = _G.GetAutoCompleteRealms and { C.pc(_G.GetAutoCompleteRealms) } or {}
+  if type(list[1]) == "table" then list = list[1] end
+  local out = {}
+  for _, r in ipairs(list) do
+    local n = P.Norm(r)
+    if n and n ~= "" then out[#out + 1] = n end
+  end
+  table.sort(out)
+  return table.concat(out, ";")
+end
+function R.HouseFingerprint(snap, key)
+  local list = {}
+  for k, str in pairs(snap.rows or {}) do
+    if type(k) == "number" then
+      local it = R.DecodeItem(str)
+      if it and it.low > 0 then list[#list + 1] = { k, it.low, it.qty, it.listings } end
+    end
+  end
+  if #list == 0 then return nil end
+  table.sort(list, function(a, b)
+    if a[4] ~= b[4] then return a[4] > b[4] end
+    if a[3] ~= b[3] then return a[3] > b[3] end
+    return a[1] < b[1]
+  end)
+  local out = {}
+  for i = 1, math.min(#list, R.HOUSE_ROWS) do out[i] = ("%d,%d,%d"):format(list[i][1], list[i][2], list[i][3]) end
+  return { v = 1, t = snap.t, realm = C.pc(_G.GetRealmName) or P.RealmName(), group = P.RealmGroup(), faction = R.FactionOfSnapKey(key),
+    full = snap.full and true or false, connected = connectedRealms(), rows = table.concat(out, ";") }
+end
+-- the fingerprint goes with its scan (a dropped or trimmed scan leaves none behind)
+function R.DropFingerprint(key)
+  local h = P.DB().house
+  if type(h) == "table" then h[key] = nil end
+end
+function R.SaveFingerprint(snap, key)
+  local fp = R.HouseFingerprint(snap, key)
+  if not fp then return false end
+  local houses = R.Houses()
+  houses[key] = fp
+  local n, oldest, ot = 0, nil, math.huge
+  for k, h in pairs(houses) do
+    n = n + 1
+    local t = type(h) == "table" and tonumber(h.t) or 0
+    if k ~= key and t < ot then oldest, ot = k, t end
+  end
+  if n > R.HOUSE_KEEP and oldest then houses[oldest] = nil end
+  return true
 end
 
 -- Called when a scan finishes (Auctions.lua Commit). Never raises: the prices are already saved and must stay saved.
@@ -578,6 +643,8 @@ function R.FinishScan(scan, full, t)
     local snap = scan.rec:Build(t, full and scan.kind ~= "browse", { pages = scan.pagesRead, of = scan.pages, summary = scan.kind == "browse" }, R.Snap(key))
     if snap.items == 0 then return false, "empty" end
     local saved, w = R.Store(snap, key)
+    -- its own pcall: a failure here never costs the scan or skips the budget check
+    if saved then local fok, ferr = pcall(R.SaveFingerprint, snap, key) if not fok then R.errors.fingerprint = tostring(ferr) end end
     R.SafeEnforce(true)
     return saved, w
   end)
@@ -1038,6 +1105,7 @@ function R.ForgetScans()
   for k in pairs(R.Snaps()) do seen[k] = true n = n + 1 end
   for k in pairs(R.OldSnaps() or {}) do if not seen[k] then n = n + 1 end end
   P.DB().agg = {}
+  P.DB().house = nil
   if P.DB().snaps ~= nil then P.DB().snaps = {} end
   Panoply:Fire("AUCTION_RECORD_CHANGED", "scan")
   return n
@@ -1200,6 +1268,7 @@ function R.Enforce(async)
       if total <= R.BUDGET then return end
       total = total - scanEntry(k)
       snaps[k] = nil
+      R.DropFingerprint(k)
       if raw then raw[k] = nil end
       dropped[#dropped + 1] = "the scan of " .. k
     end

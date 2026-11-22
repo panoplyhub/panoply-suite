@@ -49,19 +49,23 @@ The whole suite has to be version 3 because the leveling guides (below) are Pole
 ## Polestar, bundled (WoW Forever only; Nov 2026; repackaged inside Panoply Suite's folders since 0.9.5)
 On WoW Forever the leveling guide, the walking routes, the arrow's target and the travel plan come from **Polestar** by
 Fitz and the Polestar authors, which ships inside the Panoply Suite package. Thank you, Fitz.
-- **What:** Polestar release **v0.3.7.2**, revision `19bd636e7d6f33231770f6029c76d2d4dfc63798` (2026-11-12),
-  https://github.com/fitzforge/polestar, Copyright (c) 2026 The Polestar authors. Every folder of that release's `addon/`
-  directory, 592 files: `Polestar`, `Polestar_Nav`, `Polestar_Nav_EK`, `Polestar_Nav_Kalimdor`, `Polestar_Guides`,
+- **What:** Polestar release **v0.4.2.1**, revision `4e1cd841c94d41348635d7c67a7280c8ad9960c5` (https://github.com/fitzforge/polestar/releases/tag/v0.4.2.1),
+  Copyright (c) 2026 The Polestar authors. Every folder of that release's `addon/` directory except the ones listed
+  below, 803 files in 28 folders: `Polestar`, `Polestar_Options` (the settings), `Polestar_Nav`, `Polestar_Nav_EK`,
+  `Polestar_Nav_Kalimdor` (the walking-map regions are files inside these three folders), `Polestar_Guides`,
   `Polestar_Guides_Alliance`, `Polestar_Guides_Horde`, the nine race guide folders (`Polestar_Guides_Human` ...
   `Polestar_Guides_Troll`, each with `Legs.lua`), the nine language folders (`Polestar_deDE` ... `Polestar_zhTW`),
   `Polestar_ItemDB` and `Polestar_Recorder`.
-- **Where (0.9.5):** the game's AddOns list showed those 27 folders as 27 rows, so they now ship inside Panoply Suite's
+- **Left out (0.9.9):** `Polestar_Arcade`, `Polestar_Experimental`, `Polestar_Looks`, `Polestar_SkinAPI` and the ten
+  `Polestar_Skin_*` folders of that release are not part of Panoply Suite. Polestar's own code looks for them when it needs
+  them and runs without them; no file of Polestar's code was edited to leave them out.
+- **Where (0.9.5):** the game's AddOns list showed Polestar's folders (27 then) as one row each, so they now ship inside Panoply Suite's
   own folders, each folder whole and under its own name: `PanoplySuite/Polestar/<folder>/` for all but the languages,
   `PanoplySuite_Languages/<folder>/` (a load-on-demand add-on) for the nine language folders. A folder called `Polestar`
   that holds only a TOC and a README is Panoply Suite's saved-data stand-in (it keeps the old saved guide progress
   loading), not Polestar.
 - **Packaging changed, and the files `Polestar/PANOPLY-CHANGES.md` lists:** apart from those listed changes and two fixed,
-  mechanical packaging rules, no file's content is changed, and no file is renamed, added or left out. Every Lua file a Polestar TOC loads gets one wrapper on its first and
+  mechanical packaging rules, no file's content is changed, and no file of an included folder is renamed, added or left out. Every Lua file a Polestar TOC loads gets one wrapper on its first and
   last line (`PanoplySuiteBundle.File("<folder>", "<path>", function(...)` ... `end)`) so it runs under its own folder's
   name, at the moment the game would have run it (`Core/Bundle.lua`, Panoply Suite's own loader); and in those files the
   folder name in a picture, font or sound path (`"Interface\\AddOns\\" .. NAME .. ...`) is looked up through
@@ -112,10 +116,10 @@ Fitz and the Polestar authors, which ships inside the Panoply Suite package. Tha
 ## Leveling guides converted from Polestar's guide text (0.8.0, Data/Guides/; Classic Era, and WoW Forever without Polestar)
 - **Source:** Polestar, https://github.com/fitzforge/polestar, Copyright (c) 2026 The Polestar authors, licensed under
   the GNU General Public License version 3 (Polestar's `package.json`: `GPL-3.0-only`). Only Polestar's own WoW Forever
-  leveling guide text was used: `guides/forever/alliance/**.guide` and `guides/forever/horde/**.guide`, 65 guides (every
+  leveling guide text was used: `guides/forever/alliance/**.guide` and `guides/forever/horde/**.guide` and the both-faction guides directly in `guides/forever/40-50` and `50-60` (each written once per faction), 71 guides (every
   race's start, then the shared Alliance and Horde guides; what each race's guides cover is listed guide by guide in
-  `docs/launch/GUIDE-COVERAGE.md` of the Panoply Suite repository), Polestar release **v0.3.7.2**, revision
-  `19bd636e7d6f33231770f6029c76d2d4dfc63798` (2026-11-12). The exact release and revision are also written in the header of
+  `docs/launch/GUIDE-COVERAGE.md` of the Panoply Suite repository), Polestar release **v0.4.2.1**, revision
+  `4e1cd841c94d41348635d7c67a7280c8ad9960c5`. The exact release and revision are also written in the header of
   every generated file and in `Data/Guides/Index.lua` (`source.release`, `source.revision`).
 - **Not used in the converted guides:** Polestar's add-on code, compiled guide packs, UI, arrow, navigation, engine,
   frames, art, data folders and tools (those ship unedited in Polestar's own folders, section above, and are not part of

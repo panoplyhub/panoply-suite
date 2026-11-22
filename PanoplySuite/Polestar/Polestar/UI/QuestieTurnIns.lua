@@ -169,33 +169,4 @@ for _, event in ipairs({ "ADDON_LOADED", "QUEST_LOG_UPDATE", "PLAYER_REGEN_ENABL
 end
 ns.OnLogin(Integration.Refresh)
 
--- Options > Integrations > Questie, there only while Questie is installed.
--- PANOPLY CHANGE BEGIN (0.9.7 hotfix: no Questie text)
--- The settings section below no longer names the other add-on. Polestar's call is left as written; its section title,
--- label and help are swapped for plain words as it registers them (the wrapper puts Polestar's function back at once).
-local polestarRegisterOptions = ns.RegisterOptions
-if polestarRegisterOptions then
-	ns.RegisterOptions = function(spec)
-		ns.RegisterOptions = polestarRegisterOptions
-		if type(spec) == "table" and spec.section == "Questie" then
-			spec.section = L["Quest tracker add-on"]
-			for _, c in ipairs(spec.controls or {}) do
-				if c.key == "routePlan.questie" then
-					c.label = L["Show planned turn-ins in its tracker"]
-					c.help = L["Completed quests in that add-on's tracker show their Polestar turn-in step. Earlier, skipped and unplanned hand-ins are flagged."]
-				end
-			end
-		end
-		return polestarRegisterOptions(spec)
-	end
-end
--- PANOPLY CHANGE END
-if ns.RegisterOptions then
-	ns.RegisterOptions({ page = L["Integrations"], section = "Questie", controls = {
-		{ kind = "toggle", key = "routePlan.questie", label = L["Show planned turn-ins in Questie"],
-			help = L["Completed quests in Questie's tracker show their Polestar turn-in step. Earlier, skipped and unplanned hand-ins are flagged."],
-			needs = function() return ns.Compat.AddOnPresent("Questie") end },
-	} })
-end
-
 end)
