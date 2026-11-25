@@ -1481,8 +1481,9 @@ function PW:UpdateRail(force)
     b.panoplyProf = prof
     b:SetAttribute("type", (not active) and "spell" or nil)   -- the open one needs no click
     b:SetAttribute("spell", spell)
-    -- 0.9.7 hotfix (lane QFIX): when the spell lookup finds nothing, the profession's own picture, never the game's "?"
-    b.icon:SetTexture(spellIcon(spell) or (Panoply.ProfUI and Panoply.ProfUI.IconFor(prof)) or Skin.UNKNOWN_ITEM)
+    -- 0.9.9.4 hotfix: the profession's own Blizzard icon first (on WoW Forever the profession spell's picture came back as a gem
+    -- in our screenshot, Nov 22); the spell lookup only for a profession Panoply has no icon for, never the game's "?"
+    b.icon:SetTexture((Panoply.ProfUI and Panoply.ProfUI.IconFor(prof)) or spellIcon(spell) or Skin.UNKNOWN_ITEM)
     b.panoplyTitle = prof
     b.panoplyBody = active and "This is the profession shown now." or ("Open " .. prof .. ".")
     if active then b.sel:Show() else b.sel:Hide() end

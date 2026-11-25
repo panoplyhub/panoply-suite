@@ -63,7 +63,9 @@ function LC.Talent()
   local ST = Panoply.SpecTrainer
   local ok, n = pcall(ST.Next, ST)
   if not ok or type(n) ~= "table" or not n.tal then return nil end
-  return { name = n.tal.name, text = ("%s, rank %d of %d."):format(n.tal.name, n.rank, n.tal.ranks) }
+  -- (0.9.9.4: and the build it comes from)
+  local from = ST.BuildWords and ST:BuildWords() or nil
+  return { name = n.tal.name, from = from, text = ("%s, rank %d of %d%s."):format(n.tal.name, n.rank, n.tal.ranks, from and (", from " .. from) or "") }
 end
 
 -- gear in the bags that needs exactly this level, and that this class can ever wear (the vendor helper's own table)

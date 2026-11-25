@@ -66,8 +66,9 @@ W.WELCOME = {
   off = "Not for you right now? Turn Panoply Suite off",
   offTip = "Turns Panoply Suite off (the game reloads its interface). Nothing is lost, and the game's AddOns list turns it back on.",
 }
-W.OWN_TEXT = "Build my own later"
-W.OWN_TIP = "The Class page opens when setup ends so you can start your tree."
+-- 0.9.9.4 (the builds are shown the same way everywhere, setup included): the own path is "Plan by hand", as on the Class page
+W.OWN_TEXT = "Plan by hand"
+W.OWN_TIP = "The Class page opens on its Talents tab when setup ends: click talents in the order you want them."
 -- the four answers to "How much have you played?": the Class page's own levels (Modules/ClassPages/Core.lua CP.LEVELS), one line each
 W.EXPERIENCE_TEXT = {
   "Your first time playing World of Warcraft.",

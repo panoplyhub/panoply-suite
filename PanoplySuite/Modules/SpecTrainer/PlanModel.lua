@@ -114,11 +114,51 @@ function ST:PlanItems()
   local own, ready = self:Plans()
   local out = {}
   for _, p in ipairs(ready) do
-    out[#out + 1] = { text = p.name, value = p.key, tip = p.summary, ready = true }
+    -- (a public build's tooltip: its source and its page's address)
+    out[#out + 1] = { text = p.name, value = p.key, tip = (p.link and p.summary) and (p.summary .. " " .. p.link) or p.summary, ready = true }
   end
   for _, p in ipairs(own) do
     if not self:IsMirror(p) then
       out[#out + 1] = { text = p.name or p.key, value = p.key, tip = ("Your own plan: %s."):format(self:TreeSummary(p.class, p.points or {})) }
+    end
+  end
+  return out
+end
+
+-- 0.9.9.4: the plan drop-down's rows, so a player can tell the builds apart: the suggested builds grouped by spec (header = the spec),
+-- each with a second line of its kind and source ("Level 10-60 order · TimeSaver, from Icy Veins" or "Level-60 layout only · ..."),
+-- then "Plan by hand" (value ST.BY_HAND: a new empty plan of your own) and your own plans. Each: { group, text, sub, tip, value }.
+ST.BY_HAND = "__byhand"
+function ST:PlanMenuItems()
+  local own, ready = self:Plans()
+  local T = self:Trees()
+  local out = {}
+  local function srcText(p) return (p.sourceLine or ""):gsub(" %(from ", ", from "):gsub("%)$", "") end
+  -- builds grouped by spec, in the tree's spec order
+  local bySpec = {}
+  for _, p in ipairs(ready) do
+    local _, spent = self:RanksAt(p.class, p.points)
+    local main, best = 1, -1
+    for i, n in ipairs(spent or {}) do if n > best then main, best = i, n end end
+    local sp = p.spec or main
+    bySpec[sp] = bySpec[sp] or {}
+    table.insert(bySpec[sp], p)
+  end
+  for sp = 1, 3 do
+    for _, p in ipairs(bySpec[sp] or {}) do
+      local kind = p.noOrder and "Level-60 layout only" or (p.source == "basic" and (p.at60 and "Level 60" or "Leveling")) or "Level 10-60 order"
+      local src = p.sourceLine and srcText(p) or nil
+      out[#out + 1] = { group = (T and T.tabs[sp] and T.tabs[sp].name) or "Suggested", text = p.name, value = p.key, ready = true,
+        sub = src and (kind .. " \194\183 " .. src) or kind,
+        tip = (p.link and p.summary) and (p.summary .. " " .. p.link) or p.summary }
+    end
+  end
+  out[#out + 1] = { group = "Your plans", text = "Plan by hand", value = self.BY_HAND, sub = "An empty plan: click talents in the order you want them",
+    tip = "Starts an empty plan of your own on the Talents tab." }
+  for _, p in ipairs(own) do
+    if not self:IsMirror(p) then
+      out[#out + 1] = { group = "Your plans", text = p.name or p.key, value = p.key,
+        tip = ("Your own plan: %s."):format(self:TreeSummary(p.class, p.points or {})) }
     end
   end
   return out
@@ -140,7 +180,7 @@ end
 
 -- picking a plan in the dropdown: it is followed at once (talent hints, trainer, gear weights all follow it)
 function ST:ChoosePlan(value)
-  self.undo = nil
+  self.undo, self.previewKey = nil, nil
   local p = self:Track(value)
   self.edit = nil
   return p
@@ -152,7 +192,8 @@ end
 -- The plan the talent tree edits: always the plan the page shows (a working copy of it, ST.edit, so a click that the talent rules refuse
 -- changes nothing). Called by the Talents tab before it draws.
 function ST:EditActive()
-  local p = self:ActivePlan()
+  -- (0.9.9.4: Show on tree shows a build without following it: BuildCard.lua ST:ShowOnTree)
+  local p = (self.PreviewPlan and self:PreviewPlan()) or self:ActivePlan()
   local e = self.edit
   if not p then
     if not e then self:EditPlan(nil) end
@@ -183,10 +224,14 @@ function ST:Commit()
     return "saved"
   end
   -- a ready-made plan, the untouched copy that stands for one, or no plan yet (the class default): your own copy, followed
-  local origin = cur or self:Find(e.key, e.class) or self:DefaultPlan(e.class)
+  -- (a build shown with Show on tree and then edited: the copy is of that build, and it is followed from now on)
+  local shown = self.PreviewPlan and self:PreviewPlan() or nil
+  self.previewKey = nil
+  local origin = shown or cur or self:Find(e.key, e.class) or self:DefaultPlan(e.class)
   local readyKey = origin and (origin.source ~= "own" and origin.key or origin.from) or nil
-  local base = origin and origin.name or e.name or "My plan"
-  local plan = self:SavePlan({ name = self:UniqueName(base .. self.MINE, e.class), class = e.class, points = copyPoints(e.points),
+  -- (no ready-made plan behind it, as on a WoW Forever class with no suggested build: a plan of your own under its own name, no "(mine)")
+  local name = origin and self:UniqueName(origin.name .. self.MINE, e.class) or self:UniqueName(e.name or "My plan", e.class)
+  local plan = self:SavePlan({ name = name, class = e.class, points = copyPoints(e.points),
     from = readyKey, source = "own" })
   local prev = cdb[tk]
   cdb[tk] = plan.key

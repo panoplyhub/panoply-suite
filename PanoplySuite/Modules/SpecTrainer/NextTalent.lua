@@ -31,12 +31,19 @@ function ST:TalentTabShown(f, name)
 end
 
 -- The button for a talent in the shown tree (by its index in that tree), or nil.
+-- 0.9.9.4 review: on WoW Forever the game's talent buttons are trait nodes, and which PlayerTalentFrameTalent<n> shows which node is
+-- not known (our row and column order is not the game's index), so without the game's own index for the talent no button is named and
+-- no outline is drawn: no outline rather than one on the wrong talent. Classic Era: the game's index, else the talent's place in our list.
 function ST:TalentButton(tal)
   local f, name = self:TalentFrame()
   if not (f and f.IsShown and f:IsShown()) then return nil end
   if self:TalentTabShown(f, name) ~= tal.tab then return nil, "other tab" end
   local live = self:LiveTalent(tal)
-  local idx = live and live.index or tal.letter
+  local idx = live and live.index
+  if not idx then
+    if C.IsForever and C.IsForever() then return nil, "no index" end
+    idx = tal.letter
+  end
   local b = _G[name .. "Talent" .. idx]
   if b and b.IsShown and b:IsShown() then return b end
   return nil
@@ -105,10 +112,12 @@ ST:On("ADDON_LOADED", function(_, name)
   if name == "Blizzard_TalentUI" then ST:HookTalentUI() end
 end)
 ST:On("PLAYER_LOGIN", function() ST:HookTalentUI() end)
-ST:On("CHARACTER_POINTS_CHANGED", function()
-  ST:UpdateOutline()
-  if ST.card and (ST.card:IsShown() or ST.card.panoplyHeld) then ST:ShowNextCard(true) end
-end)
+for _, ev in ipairs(ST.TALENT_EVENTS) do
+  ST:On(ev, function()
+    ST:UpdateOutline()
+    if ST.card and (ST.card:IsShown() or ST.card.panoplyHeld) then ST:ShowNextCard(true) end
+  end)
+end
 
 -------------------------------------------------------------------------------
 -- The card
@@ -117,7 +126,8 @@ function ST:CardText(n, plan)
   local T = self:Trees(plan.class)
   local lines = {
     head = "Next talent",
-    sub = ("Level %d, plan: %s"):format(n.level, plan.name or "your plan"),
+    -- (0.9.9.4: "Level 12, from your Survival leveling build (Icy Veins)")
+    sub = ("Level %d, from %s"):format(n.level, self:BuildWords() or ("your plan \"" .. (plan.name or "your plan") .. "\"")),
     name = n.tal.name,
     rank = ("Point %d of %d, %s, row %d"):format(n.rank, n.tal.ranks, T.tabs[n.tal.tab].name, n.tal.tier + 1),
     why = n.why or "This is the next point in your plan.",

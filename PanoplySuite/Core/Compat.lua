@@ -597,6 +597,103 @@ function C.KnowsSpell(spellID)
   return ok and R(v) and true or false
 end
 
+-------------------------------------------------------------------------------
+-- WoW Forever's class talents (0.9.9.4 hotfix): Blizzard's trait tree (C_ClassTalents and C_Traits). Classic Era's GetTalentInfo,
+-- GetNumTalents, GetNumTalentTabs and UnitCharacterPoints are not in that game and are never called there (Modules/SpecTrainer).
+-- Reading only: no function here spends, refunds, stages or commits a point. Each returns nil when the game does not answer.
+-------------------------------------------------------------------------------
+local function call(path, ...)
+  local f = G(path)
+  if type(f) ~= "function" then missing(path) return nil end
+  local ok, a, b = pcall(f, ...)
+  if not ok then C.errors[path] = a return nil end
+  return a, b
+end
+
+-- the config the game's talent window shows: the active spec group's combat config (C_SpecializationInfo), else
+-- C_ClassTalents.GetActiveConfigID (the frame starts from that one and goes past it when it is nil). Returns the config and how it was
+-- found ("group" | "active").
+function C.TalentConfig()
+  if G("C_SpecializationInfo.GetActiveSpecGroup") and G("C_SpecializationInfo.GetCombatConfigIDForSpecGroup") then
+    local group = tonumber(R(call("C_SpecializationInfo.GetActiveSpecGroup")))
+    local id = group and R(call("C_SpecializationInfo.GetCombatConfigIDForSpecGroup", group))
+    if type(id) == "number" then return id, "group" end
+  end
+  local id = R(call("C_ClassTalents.GetActiveConfigID"))
+  if type(id) == "number" then return id, "active" end
+  return nil
+end
+
+-- the node ids of a trait tree, or nil
+function C.TalentTreeNodes(tree)
+  local list = call("C_Traits.GetTreeNodes", tree)
+  return type(list) == "table" and list or nil
+end
+
+-- one node of the config: { id, rank (learned), current (learned plus shown but not applied), max, entry }, or nil when the game has
+-- no such node (it answers ID 0, or nothing)
+function C.TalentNode(config, nodeID)
+  local info = call("C_Traits.GetNodeInfo", config, nodeID)
+  if type(info) ~= "table" then return nil end
+  local id = tonumber(R(info.ID))
+  if not id or id == 0 then return nil end
+  local rank = tonumber(R(info.activeRank)) or 0
+  local entry = type(info.activeEntry) == "table" and tonumber(R(info.activeEntry.entryID)) or nil
+  if not entry and type(info.entryIDs) == "table" then entry = tonumber(R(info.entryIDs[1])) end
+  -- (0.9.9.4: where the node is drawn, its arrows out and whether it is shown: the game's own tree, ST:LiveTree. Its gates are the static
+  -- tree's, Blizzard's tables: the game's own conditions are not read)
+  local edges = {}
+  for _, e in ipairs(type(info.visibleEdges) == "table" and info.visibleEdges or {}) do
+    local t = type(e) == "table" and tonumber(R(e.targetNode)) or nil
+    if t then edges[#edges + 1] = t end
+  end
+  local visible = R(info.isVisible)
+  return { id = id, rank = rank, current = tonumber(R(info.currentRank)) or rank, max = tonumber(R(info.maxRanks)) or 0, entry = entry,
+           posX = tonumber(R(info.posX)), posY = tonumber(R(info.posY)), edges = edges, visible = visible ~= false }
+end
+
+-- the trait tree a config shows (its first tree), or nil
+function C.TalentConfigTree(config)
+  local info = call("C_Traits.GetConfigInfo", config)
+  local ids = type(info) == "table" and info.treeIDs
+  return type(ids) == "table" and tonumber(R(ids[1])) or nil
+end
+
+-- an entry's spell id and its name in the game's language (the definition's own name when it has one)
+function C.TalentEntrySpell(config, entryID)
+  if not entryID then return nil end
+  local e = call("C_Traits.GetEntryInfo", config, entryID)
+  local defID = type(e) == "table" and tonumber(R(e.definitionID)) or nil
+  local d = defID and call("C_Traits.GetDefinitionInfo", defID)
+  if type(d) ~= "table" then return nil end
+  local spell = tonumber(R(d.spellID))
+  local name = R(d.overrideName)
+  if type(name) ~= "string" or name == "" then name = spell and C.SpellName(spell) or nil end
+  return spell, name
+end
+
+-- the unspent points on the tree (the tree's currency); nil when the game cannot say
+function C.TalentUnspent(config, tree)
+  local list = call("C_Traits.GetTreeCurrencyInfo", config, tree, false)
+  if type(list) ~= "table" or not list[1] then return nil end
+  local n
+  for _, c in ipairs(list) do
+    local qn = type(c) == "table" and tonumber(R(c.quantity)) or nil
+    if qn then n = (n or 0) + qn end
+  end
+  return n
+end
+
+-- a spell's name and icon in this game
+function C.SpellName(spell)
+  local n = R(call(G("C_Spell.GetSpellName") and "C_Spell.GetSpellName" or "GetSpellInfo", spell))
+  return type(n) == "string" and n ~= "" and n or nil
+end
+function C.SpellIcon(spell)
+  local ic = R(call(G("C_Spell.GetSpellTexture") and "C_Spell.GetSpellTexture" or "GetSpellTexture", spell))
+  return (type(ic) == "number" or type(ic) == "string") and ic or nil
+end
+
 function C.IsEliteQuest(questID)
   local f = G("C_QuestLog.IsEliteQuest")
   if not f then return false end

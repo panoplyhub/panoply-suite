@@ -138,7 +138,11 @@ A:Source("class", function()
   if points > 0 then
     local detail = "Open the Talents tab to see your next talent."
     local n = ST:Next()
-    if n and n.tal then detail = ("Next: %s, rank %d of %d."):format(n.tal.name, n.rank, n.tal.ranks) end
+    -- (0.9.9.4: the sentence names the build it comes from: "Next talent: Lethal Shots, rank 2 of 5, from your Survival leveling build (Icy Veins).")
+    if n and n.tal then
+      local from = ST.BuildWords and ST:BuildWords() or nil
+      detail = ("Next talent: %s, rank %d of %d%s."):format(n.tal.name, n.rank, n.tal.ranks, from and (", from " .. from) or "")
+    end
     out[#out + 1] = { id = "talentPoints", severity = "act", icon = "Train", characterKey = me,
       text = points == 1 and "A talent point is waiting" or ("%d talent points are waiting"):format(points), detail = detail,
       target = { page = "class", tab = "talents" } }

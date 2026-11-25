@@ -1000,7 +1000,8 @@ function Gear:AfterCombat()
   self:Pump()
 end
 
-for _, e in ipairs({ "CHARACTER_POINTS_CHANGED", "PLAYER_ENTERING_WORLD" }) do
+-- (0.9.9.4 review: WoW Forever's trait tree events too, so a talent point spent there re-weighs the gear like Classic's event did)
+for _, e in ipairs({ "CHARACTER_POINTS_CHANGED", "PLAYER_ENTERING_WORLD", "TRAIT_CONFIG_UPDATED", "TRAIT_NODE_CHANGED", "ACTIVE_TALENT_GROUP_CHANGED" }) do
   Panoply:On(e, function() Gear:Invalidate(e) end)
 end
 -- a quest handed in: the quest rewards it offered are gone from what can be had (part of the inputs: InputSig)
@@ -1024,10 +1025,20 @@ Panoply:Listen("SPEC_PLAN_CHANGED", function() Gear:Invalidate("plan") end)
 function Gear:WeightReport()
   local rows, missing = {}, {}
   local SB = Panoply.SpecBasic
+  local ST = Panoply.SpecTrainer
+  -- WoW Forever (0.9.9.4 hotfix): the ready-made plans there are Class & Spec's (ReadyMade: the public builds, none until they ship), not
+  -- Specs.lua's; one that Data/GearWeights.lua does not name is weighed with its main tree
+  local forever = C.IsForever and C.IsForever() and ST and ST.ReadyMade
   for _, class in ipairs(W.CLASSES) do
     if not S.Specs(class) then missing[#missing + 1] = class end
-    for _, d in ipairs(SB and SB.classes and SB.classes[class] or {}) do
-      local tbl, how = S.ForPlan(class, { key = d.key })
+    for _, d in ipairs(forever and ST:ReadyMade(class) or (SB and SB.classes and SB.classes[class]) or {}) do
+      local top
+      if forever and d.points then
+        local _, spent = ST:RanksAt(class, d.points)
+        local best = 0
+        for i, n in ipairs(spent or {}) do if n > best then best, top = n, i end end
+      end
+      local tbl, how = S.ForPlan(class, { key = d.key, topTree = top })
       rows[#rows + 1] = { class = class, plan = d.key, name = d.name, weighedWith = tbl and tbl.name or nil, own = how == "own", how = how,
         bands = tbl and tbl.bands ~= nil or false }
     end

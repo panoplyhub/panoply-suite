@@ -1052,12 +1052,16 @@ end
 Panoply.Kit.RegisterIcon("icon.trade.alliance", { game = { "Interface\\Icons\\INV_BannerPVP_02" } })
 Panoply.Kit.RegisterIcon("icon.trade.horde", { game = { "Interface\\Icons\\INV_BannerPVP_01" } })
 Panoply.Kit.RegisterIcon("icon.currency.favor", { game = { "Interface\\Icons\\INV_Misc_Coin_17" } })
+-- 0.9.9.4 hotfix ("our profession window has icons that look like jewelcrafting. how about we use the correct icon for the
+-- profession"): the profession's own Blizzard icon (ICON_FILES) comes first. Asking WoW Forever for the profession spell's
+-- picture gave gem pictures (our screenshot, Nov 22), so the spell lookup is only for a profession without one here.
 function PUI.IconFor(name)
+  local file = PUI.ICON_FILES[name or ""]
+  if file then return "Interface\\Icons\\" .. file end
   local prof = PD[name or ""]
   local spell = prof and prof.ranks and prof.ranks[1] and prof.ranks[1].spell
   local t = spell and Panoply.Icons:Spell(spell)   -- 0.9.7 hotfix: the one shared lookup; the game's "?" is not an answer
-  if t then return t end
-  return "Interface\\Icons\\" .. (PUI.ICON_FILES[name or ""] or "INV_Misc_QuestionMark")
+  return t or "Interface\\Icons\\INV_Misc_QuestionMark"
 end
 
 -- Kept for /panoply and older callers: a short plain summary.

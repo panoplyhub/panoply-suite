@@ -546,6 +546,56 @@ local function classSection(p, holder, W, band, states, info)
     levels = L.CLASS_LEVELS, icon = function(cell, r) crest(cell, r.class) end, accent = function(r) return "class." .. r.class end })
 end
 
+-- 0.9.9.4: the talent build each character follows (saved when it plays: Legacy.lua L:Collect, cache.build), on the shared build card
+-- (Modules/SpecTrainer/BuildCard.lua). This character's comes from its plan now. A character that follows none says so.
+L.HELP.builds = "The talent build each character follows, saved when you play it. Builds come from public guides; each card's tooltip has the guide's web address."
+local function buildFactsOf(e)
+  local ST = Panoply.SpecTrainer
+  if not ST then return nil end
+  if L:IsMe(e) then
+    local b = ST:FollowedBuild()
+    if b then return ST:BuildFacts(b) end
+    local t = ST:Tracked()
+    return t and { byHand = true, title = t.name or t.key, sub = "Planned by hand." } or nil
+  end
+  local r = e.build
+  if type(r) ~= "table" then return nil end
+  if r.own then return { byHand = true, title = r.name or "A plan of its own", sub = "Planned by hand." } end
+  for _, p in ipairs(e.classFile and ST:ReadyMade(e.classFile) or {}) do
+    if p.key == r.key then local f = ST:BuildFacts(p) f.inUse = nil return f end
+  end
+  -- (a build this game's tree no longer offers: what was saved)
+  return { key = r.key, name = r.name or r.key, kind = r.noOrder and ST.BUILD_WORDS.layout or "Leveling",
+    source = ST:BuildSourceText({ source = "public", sourceLine = r.source }), url = r.url, keys = {} }
+end
+local function buildSection(p, holder, W, band)
+  local y = header(p, holder, 0, 0, W, "Builds", L.HELP.builds)
+  p.buildCards = {}
+  local ST = Panoply.SpecTrainer
+  if not ST then return -y end
+  for _, e in ipairs(L:Chars()) do
+    local f = buildFactsOf(e)
+    local who = ("%s, %s%s"):format(e.name, e.level and ("level " .. e.level .. " ") or "", L.CLASS_NAMES[e.classFile or ""] or "")
+    local card = ST:BuildCard(holder, { mode = "line" })
+    -- the character is the title; the build's name leads the line under it ("Survival leveling · Leveling, level 10-60 · From ...")
+    local mark = L:IsMe(e) and { mark = "You" } or {}
+    if f and f.byHand then card:Set({ byHand = true, title = who, sub = "Planned by hand: " .. tostring(f.title) .. "." }, mark)
+    elseif f then
+      local g = {}
+      for k, v in pairs(f) do g[k] = v end
+      g.name, g.kind, g.inUse = who, (f.name or "") .. " \194\183 " .. (f.kind or ""), nil
+      card:Set(g, mark)
+      card.tip = f.name
+    else card:Set({ none = true, title = who, sub = "No build followed yet." }, mark) end
+    local h = card:Fit(W - 4)
+    card:SetPoint("TOPLEFT", holder, "TOPLEFT", 2, y)
+    card.panoplyChar = e.name
+    p.buildCards[#p.buildCards + 1] = card
+    y = y - h - SP.s
+  end
+  return -y
+end
+
 local function tradeSection(p, holder, W, band, states, info)
   local rows, labels = {}, {}
   local me = L:MeEntry()
@@ -670,6 +720,7 @@ function Page:DrawChallenges(p, content, W, band, states)
   local colW = floor((W - (cols - 1) * gap) / cols)
   local builders = {
     { "classes", function(h) return classSection(p, h, colW, band, states, cats.classes) end },
+    { "builds", function(h) return buildSection(p, h, colW, band) end },
     { "tradeskills", function(h) return tradeSection(p, h, colW, band, states, cats.tradeskills) end },
     { "pvp", function(h) return pvpSection(p, h, colW, band, states, cats.pvp) end },
     { "dungeons", function(h) return dungeonSection(p, h, colW, band, states, cats.dungeons) end },

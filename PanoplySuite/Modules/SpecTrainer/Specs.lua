@@ -8,6 +8,9 @@
 -- the order they are taken, one point per level from 10, 51 points in all.
 -- Talents are named by their Classic Era name; ST resolves them to talent ids (the same ids on WoW
 -- Forever, where some talents have other names; the game's own name is shown in game).
+-- 0.9.9.4 hotfix: that was wrong. WoW Forever's trees are not Classic Era's, so these plans are offered on Classic Era only; on WoW
+-- Forever the ready-made plans are the public guides' builds (Core.lua ST:ReadyMade, Data/ForeverBuilds.lua). The class lists
+-- (S.spells) still sort the trainer there, and a plan's own spells list is lent to the WoW Forever build of the same main tree.
 -- spells = { optional = { name = tag }, skip = { name = reason } } on top of the class lists below.
 -- A trainer spell the plan does not mention is Recommended.
 local ADDON, Panoply = ...

@@ -556,7 +556,7 @@ CP.TABS.pet = {
   Sig = function(v, w)
     local st = P:Strip()
     return table.concat({ P.rev or 0, tostring(P.PetLog and P.PetLog:IsOn()), tostring(P.PetLog and select(1, P.PetLog:Counts())), tostring(P:View()), tostring(P.sel and (P.sel.key .. P.sel.rank)), P.budgetMode, tostring(P.onlyNow),
-      tostring(P.familiesOpen), v.band, P.HunterLevel(), st and (tostring(st.name) .. tostring(st.level) .. tostring(st.happy) .. tostring(st.loyalty) .. tostring(st.points) .. tostring(st.spent)) or "-" }, "|")
+      tostring(P.familiesOpen), v.band, P.HunterLevel(), tostring(Panoply.SpecTrainer and Panoply.SpecTrainer:PlanValue()), st and (tostring(st.name) .. tostring(st.level) .. tostring(st.happy) .. tostring(st.loyalty) .. tostring(st.points) .. tostring(st.spent)) or "-" }, "|")
   end,
   Draw = function(p, holder, w, viewH, v)
     if holder.drawn then return holder.panoplyH end
@@ -564,6 +564,19 @@ CP.TABS.pet = {
     local fam = P:View()
     if P.sel and not P:Ability(fam, P.sel.key) then P.sel = nil end
     local y = -drawStrip(p, holder, w, fam)
+    -- 0.9.9.4: the talent build this Hunter follows and its spec, on the shared build card (Modules/SpecTrainer/BuildCard.lua)
+    p.petBuildCard = nil
+    local ST = Panoply.SpecTrainer
+    local build = ST and Panoply.Modules:IsOn("spectrainer") and ST:FollowedBuild() or nil
+    if build and build.source == "public" then
+      local facts = ST:BuildFacts(build)
+      local card = ST:BuildCard(holder, { mode = "line", actions = { "change" } })
+      card:Set(facts, { mark = facts.specName and (facts.specName .. " spec") or nil })
+      local ch = card:Fit(min(w, 640))
+      card:SetPoint("TOPLEFT", holder, "TOPLEFT", 0, y)
+      p.petBuildCard = card
+      y = y - ch - SP.m
+    end
     local wide = v.band == "wide"
     if wide then
       local gap = SP.l + SP.s

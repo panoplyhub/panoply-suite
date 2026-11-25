@@ -335,16 +335,26 @@ end
 CP.PLAN_PAGE = 12
 function CP:OpenPlanList(owner, page)
   local s = ST()
-  local all = s:PlanItems()
+  -- 0.9.9.4: the builds grouped by spec, each with its kind and source on a second line, then Plan by hand and your own plans
+  local all = s:PlanMenuItems()
   local per = self.PLAN_PAGE
   local pages = math.max(1, math.ceil(#all / per))
   page = ((math.max(1, page or 1) - 1) % pages) + 1
   local cur = s:PlanValue()
   local items = {}
+  local lastGroup
   for i = (page - 1) * per + 1, math.min(#all, page * per) do
     local it = all[i]
-    items[#items + 1] = { text = it.text, tip = it.tip, checked = it.value == cur, func = function()
-      local function pick() s:ChoosePlan(it.value) if owner.Refresh then owner:Refresh() end Menu:RefreshCurrent() end
+    if it.group and it.group ~= lastGroup then
+      if lastGroup then items[#items + 1] = { divider = true } end
+      items[#items + 1] = { header = it.group }
+      lastGroup = it.group
+    end
+    items[#items + 1] = { text = it.text, sub = it.sub, tip = it.tip, checked = it.value == cur, func = function()
+      local function pick()
+        if it.value == s.BY_HAND then s:NewEmptyPlan() else s:ChoosePlan(it.value) end
+        if owner.Refresh then owner:Refresh() end Menu:RefreshCurrent()
+      end
       if Kit.InCombat() and Kit.PageHolds("class") then
         Kit.Defer("class/dd/plan", pick)
         Panoply:Print(("The choice '%s' is made when combat ends."):format(it.text or "?"))
@@ -689,7 +699,7 @@ function CP:NowRows()
       local due = math.max(n.level or level, level)
       local when = (s:UnspentPoints() or 0) > 0 and "now" or ("at level %d"):format(due)
       out[#out + 1] = { key = "talent", icon = s:HeldIcon(n.tal, cls), title = ("%s %d/%d"):format(n.tal.name, n.rank, n.tal.ranks),
-        sub = "Next talent point, " .. when, tab = "talents" }
+        sub = "Next talent point, " .. when .. ((s.BuildWords and s:BuildWords()) and (", from " .. s:BuildWords()) or ""), tab = "talents" }
     end
     -- the trainer
     local okP, sp = pcall(s.SpellPlan, s)
@@ -829,30 +839,37 @@ local function firstRun(p, holder, w)
   -- 2
   local s = ST()
   local answeredPlan = s and s:Tracked() ~= nil
-  y = y - U.Text(holder, 0, y, w, 13, "text.primary", "2. Pick a plan", true, true) - SP.s
+  -- 0.9.9.4 (the builds are part of the new user setup too): the same question and the same build cards as setup's talent step
+  y = y - U.Text(holder, 0, y, w, 13, "text.primary", "2. How do you want to level?", true, true) - SP.s
   p.firstPlans = {}
   if s and Panoply.Modules:IsOn("spectrainer") then
-    local own, ready = s:Plans()
     local cur = s:PlanValue()
-    local list = {}
-    for _, pl in ipairs(ready) do list[#list + 1] = { key = pl.key, name = pl.name, sum = pl.summary } end
-    list[#list + 1] = { key = "own", name = "Start my own", sum = "An empty plan: click talents on the Talents tab in the order you want them." }
-    for _, it in ipairs(list) do
-      local c = Panoply.Wizard.OptionCard(holder, { onClick = function()
-        if it.key == "own" then s:NewEmptyPlan() else s:ChoosePlan(it.key) end
-        Menu:RefreshCurrent()
-      end, tip = it.name, tipBody = it.sum })
-      c.panoplyGapOK = true
-      c.title:SetText(it.name)
-      c.body:SetText(it.sum or "")
-      c.extra:SetText("")
-      c:SetSelected(answeredPlan and cur == it.key)
+    local function pickCard(facts, key, o)
+      local c = s:BuildCard(holder, { mode = "pick", onPick = function()
+          if key == "own" then s:NewEmptyPlan() else s:FollowBuild(key) end
+          Menu:RefreshCurrent()
+        end, onFollow = function() s:FollowBuild(key) Menu:RefreshCurrent() end, onShow = facts.key and function() s:ShowOnTree(key) end or nil })
+      c.tipAnchor = nil
+      c:Set(facts, { pickKey = key, selected = answeredPlan and cur == key })
       local ch = c:Fit(w)
       c:ClearAllPoints(); c:SetPoint("TOPLEFT", holder, "TOPLEFT", 0, y)
       y = y - ch - SP.s
-      c.pickKey = it.key
       p.firstPlans[#p.firstPlans + 1] = c
+      return c
     end
+    for _, g in ipairs(s:BuildsBySpec()) do
+      local hh = U.Text(holder, 0, y, w, 12, "gold.title", g.name, false, true)
+      y = y - hh - SP.xs
+      if #g.builds == 0 then
+        local c = s:BuildCard(holder, { mode = "line" })
+        c:Set({ none = true, specName = g.name })
+        local ch = c:Fit(w)
+        c:ClearAllPoints(); c:SetPoint("TOPLEFT", holder, "TOPLEFT", 0, y)
+        y = y - ch - SP.s
+      end
+      for _, f in ipairs(g.builds) do pickCard(f, f.key) end
+    end
+    pickCard({ byHand = true }, "own")
   else
     y = y - U.Text(holder, 0, y, w, 12, "text.muted", "Talents & spells is switched off, so there is no plan to pick. Turn it on with the switch at the top.", true) - SP.s
     answeredPlan = true

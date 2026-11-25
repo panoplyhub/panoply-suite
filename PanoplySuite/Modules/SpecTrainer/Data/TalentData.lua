@@ -2,6 +2,8 @@
 -- Talent trees from the game client's own DB2 tables (wago.tools CSV exports): Talent, TalentTab,
 -- SpellName. Era 1.15.9.70576 and WoW Forever 1.60.1.70707 have the same trees; Forever renamed some talents
 -- (the Forever name is the last field when it differs). In game the names come from GetTalentInfo.
+-- 0.9.9.4 hotfix: WoW Forever's live talents are NOT these trees (they are a trait tree, and differ); on WoW Forever
+-- Panoply Suite uses Data/ForeverTalentData.lua (Blizzard's WoW Forever tables). This file is Classic Era's trees.
 -- Per talent: id, tier (0-6), column (0-3), Era name, ranks, prerequisite talent id, prerequisite rank,
 -- rank 1 spell id, icon file id (SpellMisc), Forever name (or nil when the same).
 local ADDON, Panoply = ...

@@ -54,6 +54,8 @@ CP.LEVEL_TIP = {
 CP.TOPICS = {
   { key = "overview", label = "Overview", tip = "What to do next for your class, and what your class is." },
   { key = "talents", label = "Talents", own = true, module = "SpecTrainer", tip = "Your plan's talent trees, the next point and the level-by-level list." },
+  -- 0.9.9.4 (the builds shown everywhere they are needed): every suggested build of the class, on the shared build card
+  { key = "builds", label = "Builds", own = true, module = "SpecTrainer", tip = "Every suggested talent build for your class, from public guides, by spec. Follow one or show it on the tree." },
   { key = "spells", label = "Spells", own = true, module = "SpecTrainer", tip = "What to buy at each trainer visit, with its cost, and what your plan skips." },
   { key = "howto", label = "How to play", short = "Play", tip = "Leveling, what to press, shots and spells, macros and group play." },
   { key = "gear", label = "Gear", own = true, tip = "What you wear, scored for your plan, and the next upgrades for every slot." },
@@ -87,7 +89,8 @@ CP.TOPIC_ALIAS = {
   group = { "howto", "group" }, ["group play"] = { "howto", "group" }, ["spells & talents"] = { "howto", "shots" }, shots = { "howto", "shots" },
   ["how to play"] = { "howto" }, play = { "howto" }, plan = { "talents" }, talent = { "talents" }, ["talent planner"] = { "talents" },
   ["spells to buy"] = { "spells" }, trainer = { "spells" }, ["class & spec"] = { "talents" }, ["class and spec"] = { "talents" },
-  ["talents & spells"] = { "talents" }, ["class guide"] = { "overview" }, class = { "overview" },
+  ["talents & spells"] = { "talents" }, ["class guide"] = { "overview" }, class = { "overview" }, build = { "builds" },
+  ["talent builds"] = { "builds" }, ["talent build"] = { "builds" },
 }
 
 -- the longest text a macro can hold

@@ -25,6 +25,7 @@ local SP, TH = Skin.SP, Skin.TextHeight
 
 WN.NOTES = {
   { version = "0.7.3.6", lines = {} },       -- released: nothing to add
+  { version = "0.9.9.4", lines = {} },       -- Nov 23 2026: WoW Forever talent trees from Blizzard's data; public builds in every place; profession icons; nothing to add (any text is approved first)
   { version = "0.9.9.3", lines = {} },       -- Nov 22 2026: Hub: carried-over Horde house removed; old 0.9.9.1 pick no longer used; nothing to add (any text is approved first)
   { version = "0.9.9.2", lines = {} },       -- Nov 22 2026: your auction house is found automatically; nothing to add (any text is approved first)
   { version = "0.9.9.1", lines = {} },       -- Nov 21 2026: Polestar 0.4.2.1 (walking arrow fixed, guide fixes); nothing to add (any text is approved first)

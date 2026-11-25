@@ -88,6 +88,7 @@ function ST:SettingsSourceText()
   local lines = {}
   if t then
     local from = (o and o.source == "basic") and "from the Panoply Suite basic set (free, built in)"
+      or (o and o.source == "public") and ("a public build: %s, %s"):format(o.sourceLine or "a public site", o.link or "")
       or (o and o.source ~= "own") and "from your PanoplySuite_SpecPlans file" or "your own plan"
     lines[1] = ("Plan: %s, %s. Without a plan: the tree with the most points."):format(t.name or t.key, from)
   else
@@ -100,10 +101,30 @@ function ST:SettingsSourceText()
 end
 
 -- custom rows for the gear sheet: build(parent, x, y, width) -> widget, y below it
+-- 0.9.9.4 (builds shown everywhere they are needed): "Plan I follow" is the shared build card (BuildCard.lua), as on the Talents tab:
+-- the build followed, its kind and source (the web address in its tooltip), and Change build (the Class page's Builds tab). The cycling
+-- button of older versions (planButton above) is no longer drawn; ST:PlanChoices / ST:SetPlanChoice stay.
 ST.PlanRow = function(parent, x, y, width)
-  local w, ny = planButton(parent, x, y, width)
-  return w, ny
+  local card = ST:BuildCard(parent, { mode = "line",
+    onFollow = function(facts) ST:FollowBuild(facts.key) end,
+    onBack = function() ST:EndPreview() if Panoply.PageSettings then Panoply.PageSettings:RefreshRows() end end })
+  local w = math.max(ST.CARD.minW, width - 8)
+  local function fill()
+    local f, o = ST:TalentsCard()
+    if not f then f, o = { none = true, title = "No build to follow yet", sub = ST:NoBuildLine() or ST.BUILD_WORDS.noneSub }, { actions = {} } end
+    card:Set(f, o)
+    return card:Fit(w)
+  end
+  local h0 = fill()
+  card.panoplyFixedH = h0
+  function card:Refresh()
+    local h = fill()
+    if h < h0 then self:SetHeight(h0) end
+  end
+  card:SetPoint("TOPLEFT", parent, "TOPLEFT", x + 2, y)
+  return card, y - h0 - Skin.SP.s
 end
+ST.planButtonRow = planButton
 ST.PlannerRow = function(parent, x, y, width)
   local open = Skin.Button(parent, "Open the Talents tab", 200, 24, function() ST:OpenPlanner() end, "Open the Talents tab",
     "See your plan level by level, change it, or make, share and import your own.")

@@ -36,13 +36,15 @@ function ST:FollowText()
   local cls = self:ClassFile()
   local t = self:Tracked()
   if not t then
+    if self:NoBuildLine() then return { big = "No plan yet", lines = { self:NoBuildLine() } } end
     return { big = "No plan yet", lines = { "Pick a plan at the top of the Class page, or start your own. Until you do, the trainer helper uses "
       .. ((self:VerdictPlan() or {}).name or "your class's plan") .. "." } }
   end
   local lines = { self:TreeSummary(cls, t.points) }
   local ok, n = pcall(self.Next, self, t)
   if ok and n and n.tal then
-    lines[#lines + 1] = ("Next talent: %s, rank %d of %d."):format(n.tal.name, n.rank, n.tal.ranks)
+    local from = self:BuildWords()
+    lines[#lines + 1] = ("Next talent: %s, rank %d of %d%s."):format(n.tal.name, n.rank, n.tal.ranks, from and (", from " .. from) or "")
     if n.why and n.why ~= "" then lines[#lines + 1] = n.why end
   else
     lines[#lines + 1] = "No talent to take right now."
@@ -106,5 +108,7 @@ end
 function ST:PlanIntro(sp)
   local name = sp.plan and sp.plan.name or "your class's plan"
   if sp.how == "plan" then return ("Following %s. Each trainer visit: what to buy, what it costs, and what is skipped."):format(name) end
+  -- (0.9.9.4: no plan and no suggested build for this class yet)
+  if sp.how == "class" then return "No plan yet, so every spell your trainer has for you is listed. Plan your talents on the Talents tab." end
   return ("No plan picked yet, so this uses %s. Pick one at the top of the page."):format(name)
 end

@@ -4,7 +4,7 @@
 ## Author: Panoply Suite
 ## X-Publisher: Ostrowski Holdings LLC
 ## IconTexture: Interface\AddOns\PanoplySuite\Media\Shield
-## Version: 0.9.9.3
+## Version: 0.9.9.4
 ## DefaultState: enabled
 ## X-License: GPL-3.0-only (see LICENSE and NOTICE.md)
 ## OptionalDeps: PanoplySuite_QuestData, PanoplySuite_RouteData, Hearthpath_Data, PanoplySuite_Data, Hearthpath, Polestar
@@ -657,6 +657,8 @@ Modules\QuestTracker\QuestTracker.lua
 Modules\QuestTracker\Menu.lua
 Modules\QuestTracker\ItemButtons.lua
 Modules\SpecTrainer\Data\TalentData.lua
+Modules\SpecTrainer\Data\ForeverTalentData.lua
+Modules\SpecTrainer\Data\ForeverBuilds.lua
 Modules\SpecTrainer\Specs.lua
 Modules\SpecTrainer\Core.lua
 Modules\SpecTrainer\Visits.lua
@@ -668,6 +670,7 @@ Modules\SpecTrainer\Notify.lua
 Modules\SpecTrainer\SettingsPage.lua
 Modules\SpecTrainer\WizardPage.lua
 Modules\SpecTrainer\PlanModel.lua
+Modules\SpecTrainer\BuildCard.lua
 Modules\SpecTrainer\ClassSpecPage.lua
 Modules\ClassPages\Core.lua
 Modules\ClassPages\Data\Shared.lua

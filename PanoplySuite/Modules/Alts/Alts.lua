@@ -391,6 +391,14 @@ end
 
 -- the talent tree with the most points ("Beast Mastery"); nil when no points are spent or the game does not say
 function Alts.ReadSpec()
+  -- WoW Forever (0.9.9.4 hotfix): the talents are a trait tree; the tree with the most points comes from Class & Spec's reading of it
+  -- (Classic Era's GetTalentTabInfo is not in that game and is never called there)
+  if C.IsForever and C.IsForever() then
+    local ST = Panoply.SpecTrainer
+    if not (ST and ST.MainTree) then return nil end
+    local ok, name = pcall(ST.MainTree, ST)
+    return ok and type(name) == "string" and name or nil
+  end
   local f, nf = _G.GetTalentTabInfo, _G.GetNumTalentTabs
   if type(f) ~= "function" then return nil end
   local okN, tabs = pcall(nf or function() return 3 end)

@@ -3,7 +3,7 @@
 ## Notes: Guide texts and the game's names in deDE, esES, esMX, frFR, koKR, ptBR, ruRU, zhCN, zhTW for Panoply Suite on WoW Forever. Loaded on demand, only on a client in one of those languages.
 ## Author: Panoply Suite
 ## X-Publisher: Ostrowski Holdings LLC
-## Version: 0.9.9.3
+## Version: 0.9.9.4
 ## LoadOnDemand: 1
 ## Dependencies: PanoplySuite
 ## X-License: GPL-3.0-only (see Polestar_deDE/LICENSE-DATA.txt and CREDITS.md in each language folder, and ../PanoplySuite/NOTICE.md)

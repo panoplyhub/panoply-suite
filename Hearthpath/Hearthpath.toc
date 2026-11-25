@@ -3,7 +3,7 @@
 ## Notes: Keeps your old Hearthpath settings and records loading for Panoply Suite. Runs no code. Keep it turned on.
 ## Author: Panoply Suite
 ## X-Publisher: Ostrowski Holdings LLC
-## Version: 0.9.9.3
+## Version: 0.9.9.4
 ## X-License: GPL-3.0-only (see ../PanoplySuite/LICENSE)
 ## SavedVariables: HearthpathDB, HearthpathAuctionDB, HearthpathReportsDB
 ## SavedVariablesPerCharacter: HearthpathCharDB

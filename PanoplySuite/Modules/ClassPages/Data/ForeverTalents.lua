@@ -2,8 +2,8 @@
 -- ("New in the trees: ..." in Data/Hunter.lua, Mage.lua, Priest.lua and Warlock.lua, from Blizzard's class articles as read on 8 Nov
 -- 2026: logs/research/forever-class-pages-research.md). The Talents tab badges these "New in Forever", with the note in the tooltip
 -- (spec 03 section 4); the notes moved here from the How to play text.
--- UNVERIFIED: none of these names is in Modules/SpecTrainer/Data/TalentData.lua (the client's DB2 tables of Forever 1.60.1.70707), so
--- the badge shows when the game's own talent window names a talent this way (ST:LiveTalent), on the live client only.
+-- 0.9.9.4 hotfix: WoW Forever's trees now come from Blizzard's own tables (Modules/SpecTrainer/Data/ForeverTalentData.lua), which
+-- names these talents itself, so the badge matches by our own name too (and still by the game's own name, ST:LiveTalent).
 -- true = no note of its own; a string = the note.
 local ADDON, Panoply = ...
 local CP = Panoply.ClassPages

@@ -142,6 +142,37 @@ Fitz and the Polestar authors, which ships inside the Panoply Suite package. Tha
   In the game, quest, NPC and item names and quest-giver / objective positions are looked up in Panoply Suite's own
   quest data first; a name or coordinate written in the guide text is used where the guide gives one or our data has none.
 
+## WoW Forever talent trees (0.9.9.4 hotfix, Modules/SpecTrainer/Data/ForeverTalentData.lua and the game itself)
+- **In the game, the player's own class:** the talents, ranks and names are read from the game's own talent tree (Blizzard's trait API)
+  and laid on the tree below: a talent it has keeps that tree's row, column, gates and arrows; a talent new to the game is placed on
+  the same grid by the same fixed rules.
+- **Other classes, and before the game's tree can be read:** the nine classes' trees (talents, ranks, spells, icons, rows and columns,
+  arrows, gates) from World of Warcraft's own client tables of WoW Forever build 1.60.1.71037 (TraitTree, TraitNode,
+  TraitNodeXTraitNodeEntry, TraitNodeEntry, TraitDefinition, TraitEdge, TraitCond, TraitNodeGroup, TraitNodeGroupXTraitNode,
+  TraitNodeGroupXTraitCond, SkillLineXTraitTree, SpellName, SpellMisc), CSV exports from https://wago.tools, kept in
+  `tools/cache/forever-traits-71037/`. World of Warcraft (c) Blizzard Entertainment. Panoply Suite's own tool
+  `tools/build_forever_talents.py` turns them into `ForeverTalentData.lua`; the few positions the tables give off the grid are settled by
+  fixed rules that the file's header lists. Nothing of Polestar's is used for the trees any more (Nov 22 2026: "i really only wanted
+  their levleling guide").
+
+## WoW Forever suggested talent builds (0.9.9.4 hotfix, Modules/SpecTrainer/Data/ForeverBuilds.lua)
+- **Source:** TimeSaver's free WoW Forever talent calculator, `https://timesaver.gg/tools/wow-forever/talent-calculator/<class>/<spec>`,
+  read on 22 November 2026 (docs/research/forever-meta-builds.md says how). TimeSaver relays each build from the guide it names, and each
+  build is shown in the add-on as "TimeSaver (from <guide>)" with its page's address: **Maxroll**, **Wowhead**,
+  **Method** and **Icy Veins**. Thank you to all of them. we lifted the clean-room rule for
+  public site data (Nov 22 2026). No other add-on's code was read for the builds.
+- **What is used:** the order of points (levels 10 to 60) or, where the site gives only that, the level-60 layout; the talent names the
+  site gives; the build's name, the guide it is credited to and the page's address. Built by `tools/build_forever_builds.py`. Each point
+  is a talent name and rank; its spell id is Blizzard's (the talent of that name in the class's tree in the client tables of build
+  1.60.1.71037 above). The add-on offers only the builds that fit Blizzard's talent rules on the tree it uses, one a spec ("One per
+  spec, extra only if different"), and each card keeps its guide's credit.
+- **What Polestar's data was used for, and what is left of it:** while the builds were being read (22 November 2026) the research wrote
+  each talent name as the node id of the talent with exactly that name in the pre-launch talent tree data Panoply Suite then took from
+  Polestar, and replayed the ordered builds through Polestar's own talent rules as a check
+  (docs/research/forever-meta-builds.md). That check's results are not used. docs/research/forever-meta-builds-names.json turns those
+  research ids back into the names they were matched from (names only). No spell id, rank, position, gate or rule of Polestar's is in
+  the shipped builds or used to make them (0.9.9.4 review, 23 November 2026).
+
 ## Hunter pet facts (0.8.4, Modules/HunterPet/)
 - Abilities, ranks, pet levels, spell ids and which family can use what come from World of Warcraft
   client tables (SkillLineAbility, SpellName, Spell, SpellLevels), CSV exports from

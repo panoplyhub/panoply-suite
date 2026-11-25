@@ -2326,6 +2326,7 @@ function Skin.Menu(owner, items, opts)
     r:ClearAllPoints(); r:SetPoint("TOPLEFT", m, "TOPLEFT", 6, y); r:SetPoint("TOPRIGHT", m, "TOPRIGHT", -6, y)
     r.mark:Hide(); r.text:Hide(); r.head:Hide(); r.rule:Hide()
     if r.sw then r.sw:Hide() end
+    if r.sub then r.sub:Hide() end
     r.panoplyRoom = nil
     local h = 22
     if it.header then
@@ -2359,7 +2360,28 @@ function Skin.Menu(owner, items, opts)
         r.mark:Hide()
       else
         r.text:ClearAllPoints(); r.text:SetPoint("LEFT", r, "LEFT", 26, 0)
+        -- (a row that was two lines in an earlier menu gets its one line's height back)
+        if r.panoplyTwoLine and not it.sub then
+          local _, tlh = Skin.WrapMeasure(r.text, 2000)
+          r.text:SetHeight(math.ceil(tlh or 16)); r.panoplyTwoLine = nil
+        end
         if checked then r.mark:Show() else r.mark:Hide() end
+        -- 0.9.9.4: a second, smaller line under the words (it.sub: a plan's kind and source)
+        if it.sub then
+          if not r.sub then r.sub = Skin.Text(r, 10, Skin.colors.inkSoft) end
+          -- one line each: the font's own line height (the words are cut to the menu's width, never wrapped)
+          local _, tlh = Skin.WrapMeasure(r.text, 2000)
+          local th = math.ceil(tlh or 16)
+          r.sub.panoplyFullText, r.sub.panoplyCut = nil, nil
+          r.sub:SetText(it.sub)
+          local _, slh = Skin.WrapMeasure(r.sub, 2000)
+          local sh = math.ceil(slh or 13)
+          r.panoplyTwoLine = true
+          h = 4 + th + 2 + sh + 4
+          r.text:ClearAllPoints(); r.text:SetPoint("TOPLEFT", r, "TOPLEFT", 26, -4); r.text:SetHeight(th)
+          r.sub:ClearAllPoints(); r.sub:SetPoint("TOPLEFT", r, "TOPLEFT", 26, -(4 + th + 2)); r.sub:SetHeight(sh); r.sub:Show()
+          need = math.max(need, math.ceil(Skin.TextWidth(r.sub)) + r.panoplyRoom)
+        end
       end
       need = math.max(need, math.ceil(Skin.TextWidth(r.text)) + r.panoplyRoom)
       Skin.Tooltip(r, it.text, it.tip)
@@ -2382,6 +2404,7 @@ function Skin.Menu(owner, items, opts)
     w = math.min(need, math.max(w, MENU_MAX_W))
     for _, r in ipairs(m.rows) do
       if r:IsShown() and r.panoplyRoom and r.text:IsShown() then Skin.Ellipsize(r.text, r.item.text, w - r.panoplyRoom) end
+      if r:IsShown() and r.panoplyRoom and r.sub and r.sub:IsShown() then Skin.Ellipsize(r.sub, r.item.sub, w - r.panoplyRoom) end
     end
   end
   m:SetSize(w, -y + 10)

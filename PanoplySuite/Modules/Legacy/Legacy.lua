@@ -264,6 +264,18 @@ function L:Collect()
   if ex then k.explore = higher(k.explore, ex) end
   local vs = self:ReadValthalak()
   if vs then k.valth = higher(k.valth, vs) end
+  -- 0.9.9.4: the talent build this character follows, so the Legacy page can name each character's build (a new cache key, "build";
+  -- nil when it follows none or plans by hand). Read only: nothing about the plan changes.
+  local ST = Panoply.SpecTrainer
+  if ST and ST.FollowedBuild then
+    local ok, b = pcall(ST.FollowedBuild, ST)
+    if ok and type(b) == "table" then
+      k.build = { key = b.key, name = b.name, source = b.sourceLine, url = b.link, spec = b.spec, noOrder = b.noOrder and true or nil }
+    elseif ok then
+      local okT, t = pcall(ST.Tracked, ST)
+      k.build = (okT and type(t) == "table") and { own = true, name = t.name or t.key } or nil
+    end
+  end
   k.at = _G.time and time() or k.at
   -- the reward ids the collections gave this session (found while drawing; written here, where saving belongs)
   if self.foundIds and next(self.foundIds) then
@@ -314,7 +326,7 @@ function L:Chars()
           local k = type(c.cache) == "table" and c.cache or {}
           local e = { realm = realm, name = name, classFile = k.classFile or c.classFile, level = tonumber(k.level), profs = type(k.profs) == "table" and k.profs or {},
             reps = type(k.reps) == "table" and k.reps or {}, kills = type(k.kills) == "table" and k.kills or {}, explore = tonumber(k.explore),
-            valth = tonumber(k.valth), pvprank = tonumber(k.pvprank), hc = k.hc and true or false }
+            valth = tonumber(k.valth), pvprank = tonumber(k.pvprank), hc = k.hc and true or false, build = type(k.build) == "table" and k.build or nil }
           out[#out + 1] = e
           by[realm .. "\1" .. name] = e
         end

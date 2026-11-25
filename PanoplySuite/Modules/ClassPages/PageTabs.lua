@@ -51,6 +51,17 @@ CP.TABS.talents = {
       return offMessage(holder, w)
     end
     if holder.offText then holder.offText:Hide() end
+    -- (0.9.9.4: neither the game's tree nor a static one for this class: one plain line)
+    if not s:Trees() then
+      if s.planner then s.planner:Hide() end
+      if not holder.noTree then holder.noTree = select(2, U.Text(holder, 0, 0, w, 13, "text.muted", s.NO_TREE_LINE, true)) end
+      holder.noTree:SetWidth(w)
+      local th = ceil(TH(holder.noTree, w))
+      holder.noTree:SetHeight(th)
+      holder.noTree:Show()
+      return th + SP.s
+    end
+    if holder.noTree then holder.noTree:Hide() end
     local host = s:PlannerHost(holder)
     host:ClearAllPoints(); host:SetPoint("TOPLEFT", holder, "TOPLEFT", 0, 0)
     s.plannerBand = v.band
@@ -64,6 +75,131 @@ CP.TABS.talents = {
     if not wide then h = used host:SetHeight(h) end
     -- fills the view in the Wide band (the Level by level list scrolls inside); the tab scrolls only when the window is too short
     return h, wide and h <= viewH
+  end,
+}
+
+-------------------------------------------------------------------------------
+-- Builds (0.9.9.4)
+-------------------------------------------------------------------------------
+-- Every suggested build of the class by spec, on the shared build card (Modules/SpecTrainer/BuildCard.lua): Follow this build, Show on
+-- tree, In use on the one followed. Filter chips: the spec, and the kind (a level by level order, or a level-60 layout only). A spec no
+-- build fits says "No suggested build for this spec yet". Plan by hand at the end. CP.buildFilter is kept for the play session.
+CP.buildFilter = {}
+Kit.OnReset("class", function() CP.buildFilter = {} end)
+CP.BUILDS_HELP = "The talent builds of public guide sites (Maxroll, Wowhead, Method, Icy Veins), read through TimeSaver's free talent calculator. A build shows only when every talent it names is in your talent tree and it keeps the game's rules. A level-60 layout has no level by level order. The web address of each build is in its tooltip."
+CP.BUILDS_KINDS = { { nil, "Any kind" }, { "order", "Leveling order" }, { "layout", "Level-60 layout" } }
+function CP:SetBuildFilter(key, value)
+  self.buildFilter[key] = value
+  Menu:RefreshCurrent()
+end
+CP.TABS.builds = {
+  Sig = function(v, w)
+    if not stOn() then return "off" end
+    local s = ST()
+    local f = CP.buildFilter
+    return table.concat({ tostring(f.spec), tostring(f.kind), tostring(s:PlanValue()), tostring(s.previewKey),
+      tostring(s.trees and s.trees[v.class]), #s:ReadyMade(v.class), v.band }, "|")
+  end,
+  Draw = function(p, holder, w, viewH, v)
+    if holder.drawn then return holder.panoplyH end
+    holder.drawn = true
+    if not stOn() then holder.panoplyH = offMessage(holder, w) return holder.panoplyH end
+    local s = ST()
+    local f = CP.buildFilter
+    local y = 0
+    local hdr = Kit.SectionHeader(holder, { title = "Talent builds", help = CP.BUILDS_HELP })
+    y = y - hdr:Layout(0, y, w) - SP.s
+    -- the chips: the spec, then the kind
+    local all = s:BuildsBySpec(v.class)
+    p.buildChips = {}
+    local specChips = {}
+    local function chip(label, active, fn, tip)
+      local b = Skin.Tab(holder, label, 90, fn, label, tip)
+      b.panoplyPicker = true
+      b:SetActive(active)
+      p.buildChips[#p.buildChips + 1] = b
+      return b
+    end
+    specChips[1] = chip("All specs", f.spec == nil, function() CP:SetBuildFilter("spec", nil) end, "Builds for every spec.")
+    for _, g in ipairs(all) do
+      local b = chip(("%s %d"):format(g.name, #g.builds), f.spec == g.spec, function() CP:SetBuildFilter("spec", g.spec) end, "Only " .. g.name .. " builds.")
+      b.panoplySpec = g.spec
+      specChips[#specChips + 1] = b
+    end
+    y = y - Skin.FlowButtons(holder, specChips, 0, y, w, SP.s, 70) - SP.s
+    local kindChips = {}
+    for _, k in ipairs(CP.BUILDS_KINDS) do
+      local b = chip(k[2], f.kind == k[1], function() CP:SetBuildFilter("kind", k[1]) end,
+        k[1] == "layout" and "Builds the guide gives only as their level-60 layout: no level by level order." or
+        k[1] == "order" and "Builds with a level by level order from level 10." or "Both kinds.")
+      b.panoplyKind = k[1] or "any"
+      kindChips[#kindChips + 1] = b
+    end
+    y = y - Skin.FlowButtons(holder, kindChips, 0, y, w, SP.s, 70) - SP.m
+    -- (0.9.9.4: no tree for this class at all: one plain line, then Plan by hand)
+    if not s:Trees(v.class) then
+      y = y - U.Text(holder, 0, y, w, 12, "text.muted", s.NO_TREE_LINE, true) - SP.m
+    end
+    -- the cards, by spec
+    local groups, total = s:BuildsBySpec(v.class, f)
+    local cols = (v.band == "wide" and w >= 2 * s.CARD.minW + SP.m) and 2 or 1
+    local cw = floor((w - (cols - 1) * SP.m) / cols)
+    p.buildCards, p.buildGroups = {}, {}
+    local function follow(facts) s:FollowBuild(facts.key) Menu:RefreshCurrent() end
+    local function show(facts) s:ShowOnTree(facts.key) end
+    for _, g in ipairs(groups) do
+      local th = U.Text(holder, 0, y, w, 13, "gold.title", #g.builds > 0 and ("%s \194\183 %d %s"):format(g.name, #g.builds, plural(#g.builds, "build")) or g.name, false, true)
+      y = y - th - SP.s
+      p.buildGroups[#p.buildGroups + 1] = g
+      if #g.builds == 0 then
+        local c = s:BuildCard(holder, { mode = "line" })
+        local filtered = f.kind ~= nil and #((all[g.spec] or {}).builds or {}) > 0
+        c:Set(filtered and { none = true, specName = g.name, title = "No build of this kind for " .. g.name,
+          sub = "Pick Any kind to see its other builds." } or { none = true, specName = g.name })
+        local h = c:Fit(w)
+        c:ClearAllPoints(); c:SetPoint("TOPLEFT", holder, "TOPLEFT", 0, y)
+        y = y - h - SP.m
+      else
+        local i = 1
+        while i <= #g.builds do
+          local rowH, row = 0, {}
+          for k = 0, cols - 1 do
+            local facts = g.builds[i + k]
+            if facts then
+              local c = s:BuildCard(holder, { mode = "full", onFollow = follow, onShow = show })
+              c:Set(facts)
+              rowH = max(rowH, c:Fit(cw))
+              row[#row + 1] = c
+              p.buildCards[#p.buildCards + 1] = c
+            end
+          end
+          for k, c in ipairs(row) do
+            c:SetHeight(rowH)
+            c:ClearAllPoints(); c:SetPoint("TOPLEFT", holder, "TOPLEFT", (k - 1) * (cw + SP.m), y)
+          end
+          y = y - rowH - SP.m
+          i = i + cols
+        end
+      end
+    end
+    -- Plan by hand
+    local own = s:BuildCard(holder, { mode = "line", actions = { "byhand" }, onByHand = function() s:NewEmptyPlan() CP:GoTab("talents") end })
+    own:Set({ byHand = true })
+    local oh = own:Fit(w)
+    own:ClearAllPoints(); own:SetPoint("TOPLEFT", holder, "TOPLEFT", 0, y)
+    p.buildByHand = own
+    y = y - oh - SP.m
+    -- where they come from, and how many the tree in use leaves out
+    local dropped = s.droppedBuilds and s.droppedBuilds[v.class] or {}
+    local words = "Builds from public guides, read through TimeSaver. Each card's tooltip has its web address."
+    if #dropped > 0 then
+      words = words .. (" %d %s from the guides %s not fit your talent tree and %s left out."):format(#dropped, plural(#dropped, "build"),
+        #dropped == 1 and "does" or "do", #dropped == 1 and "is" or "are")
+    end
+    y = y - U.Text(holder, 0, y, w, 11, "text.muted", words, true) - SP.s
+    p.buildsTotal = total
+    holder.panoplyH = -y
+    return holder.panoplyH
   end,
 }
 
@@ -374,6 +510,17 @@ CP.TABS.gear = {
       local link = U.Link(holder, 0, y, g.weighedFor, w, function() CP:GoTab("talents") end, g.weighedFor, "Opens the Talents tab: the plan these weights come from.")
       p.weighedLink = link
       y = y - (link:GetHeight() or 14) - SP.s
+    end
+    -- 0.9.9.4: the build the weights come from, on the shared build card (its tooltip has the web address)
+    p.gearBuildCard = nil
+    local build = stOn() and ST():FollowedBuild() or nil
+    if build and build.source == "public" then
+      local card = ST():BuildCard(holder, { mode = "line", actions = { "change" } })
+      card:Set(ST():BuildFacts(build))
+      local ch = card:Fit(min(w, 640))
+      card:SetPoint("TOPLEFT", holder, "TOPLEFT", 0, y)
+      p.gearBuildCard = card
+      y = y - ch - SP.m
     end
     if g.noWeights or not g.best then
       local h = U.Text(holder, 0, y, w, 12, "text.muted", "There are no stat weights for this class and plan yet, so nothing is ranked.", true)

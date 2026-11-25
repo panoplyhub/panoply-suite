@@ -216,8 +216,20 @@ function ST:ShowClassPanel()
   self.panelKind = "class"
   local planName = plan and plan.name or "none"
   if from == "talents" then planName = planName .. " (from your talents)" end
+  -- 0.9.9.4: the spells named for the build they come from ("Spells for your Survival leveling build (Icy Veins)"), and its card
+  local buildWords, build = self:BuildWords()
+  local noun = (build and build.source == "public") and "build" or "plan"
+  local headSub = (build and build.source == "public") and ("Spells for " .. buildWords .. ".") or ("Plan: " .. planName .. ".")
   local function top(c, x, w, y)
-    y = U.Header(c, x, y, w - 24, "Trainer Helper", (ST.TrainerTitle() or "Your trainer") .. ". Plan: " .. planName .. ".")
+    y = U.Header(c, x, y, w - 24, "Trainer Helper", (ST.TrainerTitle() or "Your trainer") .. ". " .. headSub)
+    if build and build.source == "public" then
+      local card = ST:BuildCard(c, { mode = "line" })
+      card:Set(ST:BuildFacts(build))
+      local ch = card:Fit(w)
+      card:SetPoint("TOPLEFT", c, "TOPLEFT", x, y)
+      self.panelBuildCard = card
+      y = y - ch - Skin.SP.s
+    else self.panelBuildCard = nil end
     y = U.Pair(c, x, y, w, "Your gold", ST.Money(p.money), nil, Skin.colors.text)
     if self:Reserve() > 0 then y = U.Pair(c, x, y, w, "Kept aside", ST.Money(self:Reserve()), nil, Skin.colors.inkSoft, 11) end
     if #services == 0 and #learned == 0 then
@@ -229,9 +241,9 @@ function ST:ShowClassPanel()
       if db.trainerMoneyWarn == false and not ok then s = "Learn the ticked spells in order." end
       line, color = s, ok and Skin.colors.done or Skin.colors.warn
     elseif #learnedBuy > 0 then
-      line, color = "Everything your plan says to buy here is learned.", Skin.colors.done
+      line, color = ("Everything your %s says to buy here is learned."):format(noun), Skin.colors.done
     else
-      line, color = "Your plan has nothing to buy here right now.", Skin.colors.ink
+      line, color = ("Your %s has nothing to buy here right now."):format(noun), Skin.colors.ink
     end
     return U.Block(c, x, y - 2, w, 11, Skin.colors.ink, Skin.Code(color) .. line .. "|r") - Skin.SP.m
   end
@@ -268,7 +280,7 @@ function ST:ShowClassPanel()
       y = y - Skin.SP.xs
     end
     if #groups.skip > 0 and db.trainerShowSkip ~= false then
-      y = U.GroupHead(c, x, y, w, "Skipped by your plan", nil, nil, Skin.colors.inkSoft)
+      y = U.GroupHead(c, x, y, w, "Skipped by your " .. noun, nil, nil, Skin.colors.inkSoft)
       for _, r in ipairs(groups.skip) do y = U.SkipRow(c, x, y, w, r) end
     end
     if #services == 0 and #learned == 0 then

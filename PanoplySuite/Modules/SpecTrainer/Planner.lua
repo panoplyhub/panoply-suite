@@ -27,6 +27,8 @@ function ST:EditPlan(key)
   self.edit = copyPlan(p)
   self.showLevel = math.max(self.FIRST_LEVEL - 1, math.min(self.LAST_LEVEL, (self:Player().level or 1)))
   if self.showLevel < self.FIRST_LEVEL then self.showLevel = self.FIRST_LEVEL - 1 + #self.edit.points end
+  -- a build given only as its level-60 layout is shown at level 60 (it has no order to step through)
+  if self:NoOrder(self.edit) then self.showLevel = self.FIRST_LEVEL - 1 + #self.edit.points end
   self.plannerMsg = nil
   return self.edit
 end
@@ -172,8 +174,8 @@ local function put(obj, parent, x, dn, w, h)
 end
 local function clamp(v, lo, hi) return math.max(lo, math.min(hi, v)) end
 
--- the game's icon for a talent: the game's own talent API for the player's class, else the icon id in
--- Data/TalentData.lua, else the game's question mark (never a blank)
+-- the game's icon for a talent: the game's own talent API for the player's class (WoW Forever: its spell's icon, any class), else the
+-- icon id in our data (Data/TalentData.lua, Data/ForeverTalentData.lua), else the game's question mark (never a blank)
 -- the icon a tile already holds (one lookup per talent when a class is bound, not one per refresh)
 function ST:HeldIcon(tal, class)
   local b = self.cells and self.cells[tal.id]
@@ -185,6 +187,8 @@ function ST:TalentIcon(tal, class)
   -- (0.9.7 hotfix: the game's own "?" for a talent is not an answer; our data's picture is used then)
   local I = Panoply.Icons
   local ic = live and live.icon
+  -- WoW Forever (0.9.9.4 hotfix): the game's icon for the talent's spell, for any class; offline, the icon in our data
+  if I.IsUnknown(ic) and tal.spell and C.IsForever and C.IsForever() and C.SpellIcon then ic = C.SpellIcon(tal.spell) end
   if I.IsUnknown(ic) then ic = tal.icon end
   if I.IsUnknown(ic) then ic = ICON_UNKNOWN end
   return ic
@@ -322,7 +326,7 @@ ST.ArrowRects = arrowRects
 
 local function placeGeometry(t, G)
   t.G = G
-  for k = 1, 28 do
+  for k = 1, 4 * (t.rows or ST.GRID_ROWS) do
     local c = t.cells[k]
     if c then
       local tier, col = math.floor((k - 1) / 4), (k - 1) % 4
@@ -348,8 +352,8 @@ end
 
 -- the three tree columns' widgets for a class: tiles for talents, ghosts for empty slots, arrows
 local function bindClass(P, T, class)
-  if P.class == class then return end
-  P.class = class
+  if P.class == class and P.T == T then return end
+  P.class, P.T = class, T
   ST.cells = {}
   for ti = 1, 3 do
     local t, tab = P.trees[ti], T.tabs[ti]
@@ -359,8 +363,10 @@ local function bindClass(P, T, class)
       c.tal = nil
     end
     t.pos = {}
+    -- 0.9.9.4 hotfix: as many rows as the class's trees have (WoW Forever's go to 8)
+    t.rows = T.rows or ST.GRID_ROWS
     for _, tal in ipairs(tab and tab.talents or {}) do t.pos[tal.tier * 4 + tal.col + 1] = tal end
-    for k = 1, 28 do
+    for k = 1, 4 * t.rows do
       local tal = t.pos[k]
       local c = t.cells[k]
       if not c then c = {}; t.cells[k] = c end
@@ -380,12 +386,16 @@ local function bindClass(P, T, class)
     for i = 1, #t.arrows do for _, x in ipairs(t.arrows[i].parts) do x:Hide() end end
     t.arrowN = 0
     for _, tal in ipairs(tab and tab.talents or {}) do
-      local pre = tal.prereq and T.byId[tal.prereq]
-      if pre and pre.tab == tal.tab then
-        t.arrowN = t.arrowN + 1
-        local a = t.arrows[t.arrowN] or makeArrow(t)
-        t.arrows[t.arrowN] = a
-        a.from, a.to = pre, tal
+      -- every arrow into the talent (WoW Forever has some with two: either opens it). An arrow from a talent lower in the tree is
+      -- not drawn (WoW Forever pairs one with the downward arrow between the same two talents); the rule and the tooltip still have it.
+      for _, pid in ipairs(tal.prereqs or { tal.prereq }) do
+        local pre = T.byId[pid]
+        if pre and pre.tab == tal.tab and pre.tier <= tal.tier then
+          t.arrowN = t.arrowN + 1
+          local a = t.arrows[t.arrowN] or makeArrow(t)
+          t.arrows[t.arrowN] = a
+          a.from, a.to = pre, tal
+        end
       end
     end
     t.geomKey = nil
@@ -410,6 +420,13 @@ local function buildSkeleton(f)
   -- "2 points don't match your plan" (spec 03 section 4) and Match my talents beside it
   P.mismatch = U.Text(f, 12, Skin.colors.warn, "semi")
   P.mismatch:Hide()
+  P.source = U.Text(f, 11, Skin.colors.inkSoft)
+  P.source:Hide()
+  -- 0.9.9.4: the build card above the trees (BuildCard.lua ST:TalentsCard): the build shown, its kind and source, and what to do
+  P.build = ST:BuildCard(f, { mode = "line",
+    onFollow = function(facts) ST:FollowBuild(facts.key) ST:AfterEdit() end,
+    onBack = function() ST:EndPreview() ST:AfterEdit() end })
+  P.build:Hide()
   P.match = Skin.Button(f, "Match my talents", 120, 24, function() ST:MatchAndKeep(); ST:AfterEdit() end, "Match my talents",
     "Changes this plan so it starts from the talents your character has now. Points that no longer fit in 51 are left off the end. Nothing is spent or changed in the game.")
   P.match:Hide()
@@ -470,7 +487,7 @@ local function buildSkeleton(f)
   P.sync = U.Text(f, 11, Skin.colors.inkSoft); P.sync:SetJustifyH("RIGHT"); P.sync:Hide()
   P.note:SetText("Panoply Suite never spends your points.")
   -- the export / import box (it takes the buttons' row while it is open)
-  P.io = Skin.Input(f, 200, 24, "Paste a plan (HP1:...)")
+  P.io = Skin.Input(f, 200, 24, ("Paste a plan (%s:...)"):format(ST:PlanTag()))
   if P.io.icon then P.io.icon:Hide() end
   if P.io.SetTextInsets then P.io:SetTextInsets(8, 6, 0, 0) end
   if P.io.placeholder then P.io.placeholder:ClearAllPoints(); P.io.placeholder:SetPoint("LEFT", P.io, "LEFT", 8, 0) end
@@ -521,15 +538,18 @@ function ST:LiveForPlanner()
   if self.plannerLive == nil then self.plannerLive = self:LiveRanks(self:ClassFile()) or false end
   return self.plannerLive or nil
 end
-ST:On("CHARACTER_POINTS_CHANGED", function()
-  ST.plannerLive = nil
-  if ST.planner and ST.planner:IsShown() then ST:LayoutPlanner() end
-end)
+for _, ev in ipairs(ST.TALENT_EVENTS) do
+  ST:On(ev, function()
+    ST.plannerLive = nil
+    if ST.planner and ST.planner:IsShown() then ST:LayoutPlanner() end
+  end)
+end
 
 -- The talent planner: the Class page's Talents tab (the old window's door: the trainer card, the gear, the next-talent card).
 -- key: ignored since 0.9.5 (the plan is chosen in the page's header only).
 function ST:OpenPlanner(key)
   self.plannerLive = nil
+  pcall(self.RefreshLiveTree, self)
   local CP = Panoply.ClassPages
   if CP and CP.Open then return CP:Open(nil, "talents") end
   if Panoply.Menu and Panoply.Menu.Open then return Panoply.Menu:Open("class") end
@@ -540,9 +560,9 @@ end
 function ST:PlannerMenuItems()
   return {
     { text = "Export as text", tip = "A short line of text you can paste to a friend or into another character.", func = function()
-        ST.ioMode = "export"; ST.ioText = ST:Export(ST.edit); ST:Say("Copy this line (Ctrl+C). It starts with HP1:."); ST:LayoutPlanner() end },
+        ST.ioMode = "export"; ST.ioText = ST:Export(ST.edit); ST:Say(("Copy this line (Ctrl+C). It starts with %s:."):format(ST:PlanTag(ST.edit and ST.edit.class))); ST:LayoutPlanner() end },
     { text = "Import text", tip = "Paste a plan someone shared. Panoply Suite checks it against the game's talent rules first, and keeps it as a plan of your own.", func = function()
-        ST.ioMode = "import"; ST.ioText = ""; ST:Say("Paste the HP1: line and press Enter."); ST:LayoutPlanner() end },
+        ST.ioMode = "import"; ST.ioText = ""; ST:Say(("Paste the %s: line and press Enter."):format(ST:PlanTag())); ST:LayoutPlanner() end },
     { text = "Reset", tip = "Takes every point out of this plan. A ready-made plan is never changed: your own empty copy is made.", func = function() ST:ResetAndKeep(); ST:AfterEdit() end },
   }
 end
@@ -615,6 +635,19 @@ function ST:PlannerView()
   return { show = show, nShown = nShown, ranks = ranks, spent = spent, nextId = e.points[nShown + 1], T = self:Trees(e.class) }
 end
 
+-- 0.9.9.4: the line under the Next point card that names a public build's source and its page: "Source: TimeSaver (from Icy Veins),
+-- https://timesaver.gg/..." (for the build and the untouched copy that stands for it); nil for any other plan
+function ST:BuildSourceLine(e)
+  if type(e) ~= "table" then return nil end
+  local p = (e.ready and e.key and self:Find(e.key, e.class)) or nil
+  if not p and e.source == "own" and e.from then
+    local cur = self:CDB().specPlans[e.key or ""]
+    if cur and self:IsMirror(cur) then p = self:Find(e.from, e.class) end
+  end
+  if not (p and p.source == "public" and p.sourceLine) then return nil end
+  return ("Source: %s%s"):format(p.sourceLine, p.link and (", " .. p.link) or "")
+end
+
 -- the plain line on why a talent is in the plan
 function ST:WhyLine(tal)
   local e = self.edit
@@ -623,7 +656,8 @@ function ST:WhyLine(tal)
   local w = origin and origin.why and origin.why[tal.key]
   if w then return w end
   local T = self:Trees(self.edit.class)
-  return ("A %s talent, row %d."):format(T.tabs[tal.tab].name, tal.tier + 1)
+  local tab = T.tabs[tal.tab].name
+  return ("%s %s talent, row %d."):format(tab:match("^[AEIOUaeiou]") and "An" or "A", tab, tal.tier + 1)
 end
 
 -- the level a plan takes the next point of a talent, after the shown level
@@ -662,11 +696,14 @@ function ST:TalentTipText(tal)
   local due = self:DueLevel(tal.id, v.nShown)
   local rank = ("Rank %d/%d"):format(r, tal.ranks) .. (due and (" " .. DOT .. " due at level " .. due) or "")
   local meta = {}
-  if tal.tier > 0 then meta[#meta + 1] = ("Requires %d points in %s."):format(tal.tier * 5, T.tabs[tal.tab].name) end
-  if tal.prereq and T.byId[tal.prereq] then
-    local pre = T.byId[tal.prereq]
-    meta[#meta + 1] = ("Requires %s %d/%d."):format(pre.name, tal.prereqRank, pre.ranks)
+  local gate = self:GatePoints(T, tal)
+  if gate > 0 then meta[#meta + 1] = ("Requires %d points in %s."):format(gate, T.tabs[tal.tab].name) end
+  local pres = {}
+  for _, pid in ipairs(tal.prereqs or { tal.prereq }) do
+    local pre = T.byId[pid]
+    if pre then pres[#pres + 1] = ("%s %d/%d"):format(pre.name, self:NeedRank(T, pre, tal), pre.ranks) end
   end
+  if #pres > 0 then meta[#meta + 1] = ("Requires %s."):format(table.concat(pres, " or ")) end
   if tal.id == v.nextId then meta[#meta + 1] = ("Next in your %s plan."):format(e.name or "talent") end
   -- 0.9.5 phase 4H: points your character has here that the plan never takes, and WoW Forever's own talents with their note
   if self.offPlan and self.offPlan[tal.id] then meta[#meta + 1] = "You have more points here than your plan: Match my talents starts the plan from your talents." end
@@ -758,7 +795,8 @@ end
 local function layoutNext(self, P, v, e, x0, dn, cw)
   local nx = P.next
   local card = nx.card
-  local tal = v.nextId and v.T.byId[v.nextId]
+  local noOrder = self:NoOrder(e)
+  local tal = (not noOrder) and v.nextId and v.T.byId[v.nextId] or nil
   local labelW = math.ceil(Skin.TextWidth(nx.label)) + 4
   nx.label:SetWidth(labelW)
   local lh = Skin.TextHeight(nx.label, labelW); nx.label:SetHeight(lh)
@@ -778,7 +816,9 @@ local function layoutNext(self, P, v, e, x0, dn, cw)
     nx.icon:SetBorder(Skin.colors.gold); nx.icon:SetLook(1, 1); nx.icon:Show()
   else
     nx.icon:Hide()
-    if #e.points == 0 then
+    if noOrder then
+      name, why = "No order is given for this build", "Its site gives only the level-60 layout: take these talents in any order the game allows."
+    elseif #e.points == 0 then
       name, why = "No points yet", "Click a talent in the first row of a tree to start the plan."
     elseif v.nShown >= #e.points and #e.points >= self.POINTS then
       name, why = "Every point is placed", ("All %d points are in this plan."):format(self.POINTS)
@@ -789,7 +829,16 @@ local function layoutNext(self, P, v, e, x0, dn, cw)
     mw = cw - 12 - metaX - 12
   end
   nx.name:SetText(name); nx.why:SetText(why or "")
-  local nh, wh = Skin.TextHeight(nx.name, mw), Skin.TextHeight(nx.why, mw)
+  -- 0.9.9.4 hotfix: a build's notes can be longer than the old one-line reasons and wrap onto several lines: measured at the width they
+  -- are drawn at, by the real wrapped line count too
+  nx.name:SetWidth(mw); nx.why:SetWidth(mw)
+  local function textH(fs)
+    local h = Skin.TextHeight(fs, mw)
+    local n, lh = Skin.WrapMeasure(fs, mw)
+    if n and lh and lh > 0 then h = math.max(h, n * lh) end
+    return h
+  end
+  local nh, wh = textH(nx.name), textH(nx.why)
   local metaH = nh + 2 + wh
   local cardH = 2 * 7 + math.max(34, metaH)
   card:ClearAllPoints(); card:SetPoint("TOPLEFT", P.f, "TOPLEFT", x0, -dn); card:SetSize(cw, cardH)
@@ -844,17 +893,19 @@ local function styleTile(b, tal, v, t, T, nextId, off, class)
   elseif b.panoplyBadge then b.panoplyBadge:Hide() end
 end
 
--- the tile size and gaps for a tree card tw wide; avail: the height there is for the seven rows (nil: as the width allows)
-local function treeGeometry(tw, headBlock, avail)
+-- the tile size and gaps for a tree card tw wide; avail: the height there is for the rows (nil: as the width allows); rows: the
+-- rows of the class's trees (7, or 8 on WoW Forever)
+local function treeGeometry(tw, headBlock, avail, rows)
+  rows = rows or ST.GRID_ROWS
   local byW = math.floor((tw - 12 - 3 * 6) / 4)
   local tile
-  if avail then tile = clamp(math.min(byW, math.floor((avail - 6 * 8) / 7)), TILE_MIN, TILE_MAX)
+  if avail then tile = clamp(math.min(byW, math.floor((avail - (rows - 1) * 8) / rows)), TILE_MIN, TILE_MAX)
   else tile = clamp(byW, TILE_MIN, TILE_MAX) end
-  local gapY = avail and clamp(math.floor((avail - 7 * tile) / 6), 4, 12) or 8
+  local gapY = avail and clamp(math.floor((avail - rows * tile) / (rows - 1)), 4, 12) or 8
   local gapX = clamp(math.floor((tw - 12 - 4 * tile) / 3), 6, 22)
   local gridW = 4 * tile + 3 * gapX
   return { tile = tile, px = tile + gapX, py = tile + gapY, gx = math.floor((tw - gridW) / 2), gy = headBlock,
-    h = headBlock + 7 * tile + 6 * gapY + 8 }
+    h = headBlock + rows * tile + (rows - 1) * gapY + 8 }
 end
 
 -- the tree headers' text (names, points, goals): returns the tallest header block
@@ -896,13 +947,13 @@ local function layoutTree(P, i, v, e, T, x, dn, tw, cardH, G, planned, nextId, o
   if frac > 0 then put(t.fill, card, 8, by, math.max(4, math.floor(bw * frac + 0.5)), 4); t.fill:Show() else t.fill:Hide() end
   local key = table.concat({ G.tile, G.px, G.py, G.gx, G.gy, tw, e.class }, ",")
   if t.geomKey ~= key then t.geomKey = key; placeGeometry(t, G) end
-  for k = 1, 28 do
+  for k = 1, 4 * (t.rows or ST.GRID_ROWS) do
     local c = t.cells[k]
     if c and c.tal and c.btn then styleTile(c.btn, c.tal, v, t, T, nextId, off, e.class) end
   end
   for j = 1, t.arrowN do
     local a = t.arrows[j]
-    local met = (v.ranks[a.from.id] or 0) >= (a.to.prereqRank or 1)
+    local met = (v.ranks[a.from.id] or 0) >= ST:NeedRank(T, a.from, a.to)
     for _, x2 in ipairs(a.parts) do tint(x2, met and Skin.colors.gold or Skin.colors.slotLine) end
     a.met = met
   end
@@ -933,7 +984,7 @@ function ST:LayoutPlanner()
   local lvh = Skin.TextHeight(lv, lvw); lv:SetHeight(lvh)
   lv:ClearAllPoints(); lv:SetPoint("TOPRIGHT", f, "TOPLEFT", x0 + inner, -dn)
   local sl = P.slider
-  if #e.points > 0 and inner - lvw - Skin.SP.l >= 120 then
+  if #e.points > 0 and inner - lvw - Skin.SP.l >= 120 and not self:NoOrder(e) then
     local maxLv = math.max(self.FIRST_LEVEL, self.FIRST_LEVEL - 1 + #e.points)
     self.sliderQuiet = true
     if sl.SetMinMaxValues then sl:SetMinMaxValues(self.FIRST_LEVEL, maxLv) end
@@ -943,6 +994,17 @@ function ST:LayoutPlanner()
     sl:Show(); sl.label:Hide()
   else sl:Hide(); sl.label:Hide() end
   dn = dn + math.max(16, lvh) + SEC_GAP
+  -- the build card (0.9.9.4)
+  do
+    local bf, bo = self:TalentsCard()
+    self.buildCardShown = bf
+    if bf then
+      P.build:Set(bf, bo)
+      local bh = P.build:Fit(inner)
+      put(P.build, f, x0, dn); P.build:Show()
+      dn = dn + bh + SEC_GAP
+    else P.build:Hide() end
+  end
   -- the Next point card
   dn = dn + layoutNext(self, P, v, e, x0, dn, inner) + SEC_GAP
   -- live vs plan: "2 points don't match your plan", the nodes outlined in amber, and Match my talents
@@ -971,10 +1033,28 @@ function ST:LayoutPlanner()
       P.match:ClearAllPoints(); P.match:SetPoint("TOPLEFT", f, "TOPLEFT", x0 + mw + Skin.SP.m, -dn); P.match:Show()
       self.mismatchText = P.mismatch:GetText()
       dn = dn + rowH + SEC_GAP
+    elseif self:OldPlanLine() or (e.class == self:ClassFile() and self:NoBuildLine(e.class)) then
+      -- 0.9.9.4 hotfix: the plan this character followed was made for the old talent trees (it is not used, never mapped: a warning);
+      -- or the class has no suggested build yet and no plan is followed (plain words: plan by hand)
+      P.match:Hide()
+      local old = self:OldPlanLine()
+      P.mismatch:SetText(old or self:NoBuildLine(e.class))
+      colorText(P.mismatch, old and Skin.colors.warn or Skin.colors.inkSoft)
+      P.mismatch:SetWidth(inner)
+      local mh = Skin.TextHeight(P.mismatch, inner); P.mismatch:SetHeight(mh)
+      put(P.mismatch, f, x0, dn)
+      P.mismatch:Show()
+      self.mismatchText = P.mismatch:GetText()
+      dn = dn + mh + SEC_GAP
     else
       P.mismatch:Hide(); P.match:Hide()
+      colorText(P.mismatch, Skin.colors.warn)
       self.mismatchText = nil
     end
+    -- 0.9.9.4: a public build names its source and its page (P.source, information only)
+    -- (0.9.9.4: the build card above names the source; its tooltip has the web address. The words stay readable for the tests.)
+    self.sourceText = self:BuildSourceLine(e)
+    P.source:Hide()
   end
   -- footer (measured first in the Wide band: the trees take what is left)
   local GRIP = 0
@@ -1007,7 +1087,7 @@ function ST:LayoutPlanner()
     local treesW = inner - TL_W - SEC_GAP
     local tw = math.floor((treesW - 2 * gap) / 3)
     local headBlock = treeHeads(P, v, e, T, tw, planned, goal)
-    local G = treeGeometry(tw, headBlock, bodyH - headBlock - 8)
+    local G = treeGeometry(tw, headBlock, bodyH - headBlock - 8, T.rows)
     self.tileSize = G.tile
     for i = 1, 3 do layoutTree(P, i, v, e, T, x0 + (i - 1) * (tw + gap), bodyTop, tw, bodyH, G, planned, nextId, off) end
     self:LayoutTimeline(P, v, e, T, x0 + treesW + SEC_GAP, bodyTop, bodyH, TL_W)
@@ -1015,7 +1095,7 @@ function ST:LayoutPlanner()
   elseif band == "medium" then
     local tw = math.floor((inner - 2 * gap) / 3)
     local headBlock = treeHeads(P, v, e, T, tw, planned, goal)
-    local G = treeGeometry(tw, headBlock, nil)
+    local G = treeGeometry(tw, headBlock, nil, T.rows)
     self.tileSize = G.tile
     for i = 1, 3 do layoutTree(P, i, v, e, T, x0 + (i - 1) * (tw + gap), bodyTop, tw, G.h, G, planned, nextId, off) end
     local tlTop = bodyTop + G.h + SEC_GAP
@@ -1043,7 +1123,7 @@ function ST:LayoutPlanner()
     local treeTop = bodyTop + bh + SEC_GAP
     local tw = inner
     local headBlock = treeHeads(P, v, e, T, tw, planned, goal)
-    local G = treeGeometry(tw, headBlock, nil)
+    local G = treeGeometry(tw, headBlock, nil, T.rows)
     self.tileSize = G.tile
     for i = 1, 3 do
       if i == shown then layoutTree(P, i, v, e, T, x0, treeTop, tw, G.h, G, planned, nextId, off)
@@ -1070,7 +1150,7 @@ function ST:LayoutPlanner()
       if P.io.placeholder then if P.ioLast ~= "" then P.io.placeholder:Hide() else P.io.placeholder:Show() end end
       if io == "export" and P.io.HighlightText then P.io:SetFocus(); P.io:HighlightText() end
     end
-    if P.io.placeholder then P.io.placeholder:SetText(imp and "Paste a plan (HP1:...)" or "") end
+    if P.io.placeholder then P.io.placeholder:SetText(imp and ("Paste a plan (%s:...)"):format(self:PlanTag(e.class)) or "") end
     P.io:Show()
     P.ioDone.label:SetText(imp and "Import" or "Done")
     P.ioDone.tip, P.ioDone.tipBody = imp and "Import" or "Done", imp and "Checks the text against the game's talent rules, then keeps it as a plan of your own." or "Closes the box."
@@ -1147,7 +1227,8 @@ function ST:LayoutTimeline(P, v, e, T, x, dn, cardH, cardW)
   -- what goes in the list
   local items, count = {}, {}
   local lastLo
-  for i, id in ipairs(e.points) do
+  local noOrder = self:NoOrder(e)
+  for i, id in ipairs(noOrder and {} or e.points) do
     local tal = T.byId[id]
     -- Legacy Talented: the points start earlier, and the early ones are marked
     local lvN = (first or self.FIRST_LEVEL) + i - 1
@@ -1231,8 +1312,9 @@ function ST:LayoutTimeline(P, v, e, T, x, dn, cardH, cardW)
       tl.bottoms[#tl.tops] = y
     end
   end
-  if #e.points == 0 then
-    tl.note:SetText("No points yet. Click a talent in the first row of a tree.")
+  if #e.points == 0 or noOrder then
+    tl.note:SetText(noOrder and "This build gives only the level-60 layout, not an order of points. The trees show where its points go."
+      or "No points yet. Click a talent in the first row of a tree.")
     put(tl.note, content, 4, 4, rowW - 8)
     local h = Skin.TextHeight(tl.note, rowW - 8); tl.note:SetHeight(h); tl.note:Show()
     y = h + 8
