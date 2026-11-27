@@ -146,7 +146,7 @@ function Trail:Build(r)
       segs[#segs + 1] = s
     elseif k == "fly" then
       local s = newSeg(l.from.cont, "fly", i)
-      -- a flight that brings its own line (Polestar's plan lists every flight point it passes)
+      -- a flight that brings its own line (PanoplyGuide's plan lists every flight point it passes)
       if l.points then for _, p in ipairs(l.points) do addPt(s, p[1], p[2]) end end
       for _, row in ipairs(l.paths or {}) do
         local pts = RD and RD.Trail and row[5] and RD.Trail(row)
@@ -1213,7 +1213,7 @@ end
 -- Where the player is on the walk (Nov 14 2026, 0.9.4 step 22: "Dots behind the player must disappear as they pass them")
 -------------------------------------------------------------------------------
 -- Why they stayed: the route is made once from where the player stood, and the trail drew all of it until the next plan. Our own planner
--- plans again only for a new step or after being off the walk for five seconds; the walk Polestar gives is the whole path from where its
+-- plans again only for a new step or after being off the walk for five seconds; the walk PanoplyGuide gives is the whole path from where its
 -- search began and changes only when it searches again (more than 25 yd off). Nothing ever cut the part already walked.
 -- Now each update finds the player's place on the walk and the trail starts there: self.prog = { segs, cont, si (which of the trail's pieces),
 -- s0 (yards along it: only grows while he follows it), e (the edge of the piece s0 is on), d, seg, nx, ny, along (the nearest point of the

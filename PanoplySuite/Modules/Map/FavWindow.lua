@@ -8,7 +8,7 @@
 --            (filled in from a click on the map, where you stand or your target; every field can be changed).
 --   Icons    a search box and a grid of the game's own icons; picking one sets the form's icon.
 --   Share    the text line, selected, to copy; Import reads a pasted line and says what it added.
--- Uses the suite's shared pieces (windows, dropdowns, ticks, buttons, the copy window); no Polestar name or art is shown.
+-- Uses the suite's shared pieces (windows, dropdowns, ticks, buttons, the copy window); no PanoplyGuide name or art is shown.
 local ADDON, Panoply = ...
 local C, Skin, Kit, M = Panoply.Compat, Panoply.Skin, Panoply.Kit, Panoply.Map
 local SP, TH, TW = Skin.SP, Skin.TextHeight, Skin.TextWidth

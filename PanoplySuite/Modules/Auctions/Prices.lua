@@ -34,9 +34,21 @@ P.Now = now
 -------------------------------------------------------------------------------
 local function norm(s) return s and (tostring(s):gsub("[%s%-']", "")) or nil end
 P.Norm = norm
+-- 0.9.9.5: WoW Forever's client stopped naming the realm to add-ons in its 1.60.1 hotfix (November 2026): GetRealmName and
+-- GetNormalizedRealmName read "". The key is then realm-less ("-Alliance"), the key that client's saves already use, so nothing
+-- saved under it is left behind. A name the game gave earlier in this session is kept and used instead, so an empty read never
+-- files anything under the realm-less key while a better one is known.
+-- The realm as the game names it, for words and for Panoply Hub's label only ("" when the game named none this session).
+function P.RealmLabel()
+  local n = C.pc(_G.GetRealmName)
+  if type(n) == "string" and n ~= "" then P.knownRealmLabel = n return n end
+  return P.knownRealmLabel or ""
+end
 function P.RealmName()
   local n = C.pc(_G.GetNormalizedRealmName)
   if not n or n == "" then n = norm(C.pc(_G.GetRealmName)) end
+  if n and n ~= "" then P.knownRealm = n P.RealmLabel() return n end
+  if P.knownRealm then return P.knownRealm end
   return n or "Unknown"
 end
 -- Connected realms: all share one key, the alphabetically first normalised name of the group.
@@ -257,6 +269,9 @@ local function hubRealm(f)
   local want = {}
   for _, n in ipairs(tries) do if n then want[norm(n):lower()] = true end end
   for k, v in pairs(f.realms) do if type(k) == "string" and type(v) == "table" and want[norm(k):lower()] then return v, k end end
+  -- 0.9.9.5: the realm-less entry: the house of each faction for a realm the game does not name (WoW Forever since 1.60.1) or
+  -- names otherwise than Panoply Hub knows it (Hub knows realms from the character folders)
+  if type(f.realms[""]) == "table" then return f.realms[""], "" end
   return nil
 end
 function P.HubHouses()
@@ -295,8 +310,13 @@ function P.HubHouseLine()
     if not id then id, shownFaction = realm.All, nil end
     local guessed = type(f.guessed) == "table" and type(f.guessed[name]) == "table" and f.guessed[name][shownFaction or "All"]
     if id and not guessed and hubHouse(f, id) then
-      local shown = C.pc(_G.GetRealmName) or P.RealmName()
-      local line = shownFaction and P.HOUSE_FOUND:format(shownFaction, shown) or P.HOUSE_FOUND_ONE:format(shown)
+      local shown = P.RealmLabel()
+      local line
+      if shown == "" then line = P.HOUSE_FOUND_ONE:format(shownFaction or P.Faction())   -- no realm name to show (0.9.9.5)
+      -- WoW Forever has one house per faction, not per realm, and what the game calls the realm there is a server name
+      -- ("CAMWOW US1 Realm 7 PvE"): the faction alone
+      elseif shownFaction and C.IsForever() then line = P.HOUSE_FOUND_ONE:format(shownFaction)
+      else line = shownFaction and P.HOUSE_FOUND:format(shownFaction, shown) or P.HOUSE_FOUND_ONE:format(shown) end
       return line, true, line, "matched"
     end
   end

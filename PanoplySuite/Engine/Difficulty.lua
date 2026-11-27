@@ -105,7 +105,7 @@ end
 --   ask   the guide asks at each group quest (the guide card's question; an answer given for a quest is kept for that quest)
 --   do    group quests are always part of the guide
 --   skip  group quests are always left out
--- Engine/PolestarEngine.lua hands the setting to the guide engine at login and whenever it changes. The words below are the
+-- Engine/PanoplyGuideEngine.lua hands the setting to the guide engine at login and whenever it changes. The words below are the
 -- one copy every window uses (Settings, setup, the slash line).
 -------------------------------------------------------------------------------
 D.GROUP_QUESTS = { "ask", "do", "skip" }

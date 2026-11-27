@@ -17,7 +17,9 @@
 --   house[realm-faction] = { v = 1, t, realm, group, faction, full, connected, rows = "itemId,lowest,qty;..." }   (0.9.9.2) a small
 --                         sample (at most R.HOUSE_ROWS items, the ones with the most listings) of each finished scan that was saved, so Panoply
 --                         Hub, which can see the game's save files but not which auction house you stood at, can work out which of Blizzard's
---                         auction houses is yours. Read only use of the scan; at most R.HOUSE_KEEP realm-factions.
+--                         auction houses is yours. Read only use of the scan; at most R.HOUSE_KEEP realm-factions. 0.9.9.5: Hub matches
+--                         by faction and the realm is a label: with no realm name from the game (WoW Forever since 1.60.1) the key is
+--                         "-Faction" and realm is "", and the fingerprint is saved all the same.
 --   rec[realmGroup][character] = { f = faction, seen = time, mail = { "subject|minute" ... },
 --                                  listed / sold / bought / unsold = { "csv row", ... } }
 -- Rows are text, not tables: a Lua table per item costs several times more in the saved file and in memory.
@@ -611,7 +613,9 @@ function R.HouseFingerprint(snap, key)
   end)
   local out = {}
   for i = 1, math.min(#list, R.HOUSE_ROWS) do out[i] = ("%d,%d,%d"):format(list[i][1], list[i][2], list[i][3]) end
-  return { v = 1, t = snap.t, realm = C.pc(_G.GetRealmName) or P.RealmName(), group = P.RealmGroup(), faction = R.FactionOfSnapKey(key),
+  -- 0.9.9.5: the realm is only a label for Panoply Hub, which matches by faction: with no realm name from the game (WoW Forever
+  -- since 1.60.1) it is "" and the fingerprint is saved all the same, under the scan's own key
+  return { v = 1, t = snap.t, realm = P.RealmLabel(), group = P.RealmGroup(), faction = R.FactionOfSnapKey(key),
     full = snap.full and true or false, connected = connectedRealms(), rows = table.concat(out, ";") }
 end
 -- the fingerprint goes with its scan (a dropped or trimmed scan leaves none behind)

@@ -3,8 +3,8 @@ local ADDON, Panoply = ...
 local C = Panoply.Compat
 
 function Panoply:Replan(reason, planHere)
-  -- WoW Forever with Polestar's engine (Engine/PolestarEngine.lua): Polestar plans; our planner is not asked
-  if Panoply.PolestarEngine and Panoply.PolestarEngine:Active() then return Panoply.PolestarEngine:Replan(reason) end
+  -- WoW Forever with PanoplyGuide's engine (Engine/PanoplyGuideEngine.lua): PanoplyGuide plans; our planner is not asked
+  if Panoply.PanoplyGuideEngine and Panoply.PanoplyGuideEngine:Active() then return Panoply.PanoplyGuideEngine:Replan(reason) end
   -- 0.9.7 (Nov 18 2026): the guide engine cannot run: nothing takes its place (no old planner, no converted guide). The guide
   -- card says "Guide not available"; a re-plan the player asked for says it in chat too (Core/Init.lua GuideUnavailable).
   if Panoply:GuideUnavailable() then
@@ -66,7 +66,7 @@ Panoply:Listen("PLAN_FINISHED", function()
   -- Hub phase 1: a plan sent from Panoply Hub ran out (Engine/Hub.lua). A side trip puts the leveling place back, so there is
   -- no next stretch to plan here; a finished replan is followed by the ordinary next stretch below.
   if Panoply.Hub and Panoply.Hub:OnPlanFinished() then return end
-  if Panoply.PolestarEngine and Panoply.PolestarEngine:Active() then return end   -- Polestar goes on to its next guide itself (the guide window asks)
+  if Panoply.PanoplyGuideEngine and Panoply.PanoplyGuideEngine:Active() then return end   -- PanoplyGuide goes on to its next guide itself (the guide window asks)
   if Panoply:GuideUnavailable() then return end   -- 0.9.7: no guide engine, and nothing in its place to plan on
   if not Panoply.db or not Panoply.db.autoExtendPlan or extendedFor == steps or Panoply:PlayAlong() or Panoply:NoGuideHere() then return end
   if not Panoply.QuestData:Available() then return end
@@ -88,7 +88,7 @@ end
 
 -- Settings that need more than a saved value.
 -- (0.9.7: the levelling style and its "Re-planning..." line are gone. Group quests is handed to the guide engine by
--- Engine/PolestarEngine.lua when it changes; nothing is planned again.)
+-- Engine/PanoplyGuideEngine.lua when it changes; nothing is planned again.)
 Panoply.optionHooks.arrowShown = function() Panoply.Arrow:Refresh() end
 Panoply.optionHooks.blizzWaypoint = function(v) if not v then C.ClearBlizzWaypoint() end Panoply.Arrow.target = nil Panoply.Arrow:Retarget() end
 Panoply.optionHooks.minimapButton = function() if Panoply.Minimap then Panoply.Minimap:Refresh() end end
@@ -106,14 +106,14 @@ local function restoreOrPlan()
   if Panoply.Hub then hubOK, hubRoute = pcall(Panoply.Hub.AtRestore, Panoply.Hub) end
   if not hubOK then Panoply:Debug("hub restore", hubRoute) hubRoute = false end
   if hubRoute then return end
-  -- WoW Forever with Polestar's engine: its guide is the route; nothing of ours is restored or planned (the saved plan stays saved)
-  if Panoply.PolestarEngine and Panoply.PolestarEngine:Active() then
+  -- WoW Forever with PanoplyGuide's engine: its guide is the route; nothing of ours is restored or planned (the saved plan stays saved)
+  if Panoply.PanoplyGuideEngine and Panoply.PanoplyGuideEngine:Active() then
     Panoply.Engine.detour, Panoply.Engine.travel = nil, nil
-    Panoply.PolestarEngine.key = nil
-    -- 0.9.6 phase I: a character with no guide open gets one now (Polestar's own login pick failed in the bundle until 0.9.6)
-    Panoply.PolestarEngine:EnsureGuide("login")
-    Panoply.PolestarEngine:Sync("login")
-    Panoply.PolestarEngine:SyncRoute("replan")
+    Panoply.PanoplyGuideEngine.key = nil
+    -- 0.9.6 phase I: a character with no guide open gets one now (PanoplyGuide's own login pick failed in the bundle until 0.9.6)
+    Panoply.PanoplyGuideEngine:EnsureGuide("login")
+    Panoply.PanoplyGuideEngine:Sync("login")
+    Panoply.PanoplyGuideEngine:SyncRoute("replan")
     return
   end
   -- 0.9.7 (Nov 18 2026): the guide engine cannot run. Nothing below runs in the add-on: no converted guide, no saved planner
@@ -263,8 +263,8 @@ function Panoply:OnLogin()
   step("minimap button", Panoply.Minimap.Create, Panoply.Minimap)
   step("settings page", Panoply.SettingsUI.RegisterBlizzard, Panoply.SettingsUI)
   step("automation", Panoply.Automation.Register, Panoply.Automation)
-  -- WoW Forever: Polestar's engine, when it is loaded (hides Polestar's own windows; our windows draw its guide and route)
-  if Panoply.PolestarEngine then step("polestar engine", Panoply.PolestarEngine.OnLogin, Panoply.PolestarEngine) end
+  -- WoW Forever: PanoplyGuide's engine, when it is loaded (hides PanoplyGuide's own windows; our windows draw its guide and route)
+  if Panoply.PanoplyGuideEngine then step("panoplyguide engine", Panoply.PanoplyGuideEngine.OnLogin, Panoply.PanoplyGuideEngine) end
   -- Suite modules (merchant, bags, glow, gathering, profession window, waypoints)
   step("modules", Panoply.Modules.ApplyAll, Panoply.Modules, true)
   if Panoply.ProfTracker then step("profession tracker", Panoply.ProfTracker.Create, Panoply.ProfTracker) end
@@ -379,7 +379,7 @@ local replanPending, lastAutoReplan = false, -1000
 Panoply.PARTY_REPLAN_GAP = 120
 function Panoply:CheckReplan(event)
   if not Panoply.db or Panoply.db.autoReplan == false then return end
-  if Panoply.PolestarEngine and Panoply.PolestarEngine:Active() then return end   -- Polestar re-plans by itself
+  if Panoply.PanoplyGuideEngine and Panoply.PanoplyGuideEngine:Active() then return end   -- PanoplyGuide re-plans by itself
   if Panoply:GuideUnavailable() then return end   -- 0.9.7: no guide engine, and nothing in its place to re-plan
   if Panoply.Hub and Panoply.Hub:Holds() then return end   -- Hub phase 1: a plan sent from Panoply Hub is followed as it was sent, never re-planned by itself
   if Panoply:NoGuideHere() then return end   -- 0.7.4.1: no guide for this area
@@ -426,7 +426,7 @@ end
 -- re-plan as above (sliced, never in combat, at most once per 20 s, never offers to drop quests, the leader plans for a pair).
 function Panoply:ResumeReplan(reason)
   if Panoply:PlayAlong() or Panoply:NoGuideHere() or not Panoply.QuestData:Available() then return end
-  if Panoply.PolestarEngine and Panoply.PolestarEngine:Active() then return end
+  if Panoply.PanoplyGuideEngine and Panoply.PanoplyGuideEngine:Active() then return end
   if Panoply:GuideUnavailable() then return end   -- 0.9.7: no guide engine, and nothing in its place
   if Panoply.Hub and Panoply.Hub:Holds() then return end   -- Hub phase 1: a Panoply Hub plan holds the route
   if Panoply.Planner.job then return end
@@ -459,7 +459,7 @@ end
 -- Returns ok, why: ok = a new route is being built (or already is) and goes to the partner when ready.
 function Panoply:PartnerReplan(who)
   if Panoply:PlayAlong() then return false, "playalong" end
-  if Panoply.PolestarEngine and Panoply.PolestarEngine:Active() then return false, "polestar" end
+  if Panoply.PanoplyGuideEngine and Panoply.PanoplyGuideEngine:Active() then return false, "panoplyguide" end
   if Panoply:GuideUnavailable() then return false, "noguide" end   -- 0.9.7: no guide engine, and no planner in its place
   if Panoply:NoGuideHere() then return false, "noguide" end   -- 0.7.4.1
   if Panoply.Planner.job then return true end   -- one is already running; its result is shared the same way
@@ -531,6 +531,9 @@ Panoply:Listen("STEP_CHANGED", function() if Panoply.db then Panoply.Sync:SendSt
 
 -- Key bindings (Bindings.xml)
 _G.BINDING_HEADER_HEARTHPATH = "Panoply Suite"
+-- the last file of PanoplySuite's TOCs: the guide engine's tables as they stand before the game reads the saved variables in
+-- (Core/Bundle.lua B.Snapshot, so its saved data from before 0.9.9.5 is moved over the empty tables the engine made)
+if _G.PanoplySuiteBundle and _G.PanoplySuiteBundle.Snapshot then _G.PanoplySuiteBundle.Snapshot() end
 _G.BINDING_NAME_HEARTHPATH_TOGGLE = "Show/hide guide"
 _G.BINDING_NAME_HEARTHPATH_NEXT = "Next step"
 _G.BINDING_NAME_HEARTHPATH_PREV = "Previous step"

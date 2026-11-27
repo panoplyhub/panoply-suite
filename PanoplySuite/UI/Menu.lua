@@ -846,13 +846,13 @@ function Guide.RowLines(step)
 end
 
 -- the "On your screen" and automation toggles: { key, label, slot, get, set, gear section, shown }
--- 0.9.7 (WoW Forever): levelling with a partner runs on the guide engine's party sync, reached only through Engine/PolestarParty.lua.
+-- 0.9.7 (WoW Forever): levelling with a partner runs on the guide engine's party sync, reached only through Engine/PanoplyGuideParty.lua.
 -- party() gives that module while it is the one in charge (the guide engine is running, or partner levelling is on); nil means
 -- the older partner sync (Engine/Sync.lua) is the one this client runs.
 local function party()
-  local PP = Panoply.PolestarParty
+  local PP = Panoply.PanoplyGuideParty
   if not PP then return nil end
-  local PE = Panoply.PolestarEngine
+  local PE = Panoply.PanoplyGuideEngine
   if (PP.Enabled and PP:Enabled()) or (PE and PE.Active and PE:Active()) then return PP end
   return nil
 end
@@ -1833,12 +1833,12 @@ local function partnerMe()
   return me
 end
 
--- 0.9.7 (WoW Forever): the Partner tab on the guide engine's party sync. Everything comes from Engine/PolestarParty.lua's agreed
+-- 0.9.7 (WoW Forever): the Partner tab on the guide engine's party sync. Everything comes from Engine/PanoplyGuideParty.lua's agreed
 -- calls: Enabled (the Level together switch), PartnerLine (one line about the partner) and Card (the sync question, the class-quest
 -- hold or the help-your-partner step, with its buttons). Nothing here reads the old shared-route number.
 -- A card is read as { kind = "sync" | "wait" | "hold" | "help" | "ahead", title, body (or text), lines = { ... }, buttons =
 -- { { label, tip, fn } or { label, tip, action = "Accept" | "Decline" | "GoOn" | "Help" | "StopHelp" | "RequestSync" } } } (the
--- shape Engine/PolestarParty.lua and Engine/PartnerHold.lua give, the same one the guide window draws); a card with no buttons of
+-- shape Engine/PanoplyGuideParty.lua and Engine/PartnerHold.lua give, the same one the guide window draws); a card with no buttons of
 -- its own gets the usual ones for its kind.
 Menu.PARTY_BUTTONS = 3
 Menu.PARTY_TEXT = {
@@ -2076,8 +2076,8 @@ Menu:RegisterTab("Partner", function(p)
   p.settingsBtn = Skin.Button(lb, "Level together settings", 190, 26, function() Menu:OpenGear("guide", "together") end,
     "Level together settings", "Level together and Wait for my partner are in the Guide's gear.")
   local sync = Skin.Button(lb, "Sync now", 120, 26, function()
-    -- 0.9.7: where the guide engine's party sync can run, "Sync now" is its "Sync to my step" (Engine/PolestarParty.lua)
-    local PP = Panoply.PolestarParty
+    -- 0.9.7: where the guide engine's party sync can run, "Sync now" is its "Sync to my step" (Engine/PanoplyGuideParty.lua)
+    local PP = Panoply.PanoplyGuideParty
     if PP and PP.RequestSync and PP.CanRun and PP:CanRun() then
       if not PP:RequestSync() and not PP:Enabled() then Panoply:Print(PP:FriendlyStatus()) end
       Menu:RefreshCurrent()
@@ -2094,7 +2094,7 @@ Menu:RegisterTab("Partner", function(p)
   -- 0.9.7 (WoW Forever, the party sync): "Sync to my step", and the card for a sync question, a class-quest hold or a
   -- help-your-partner step with its buttons. All of it is made here, with the page; showing a card creates nothing.
   p.syncStepBtn = Skin.Button(lb, "Sync to my step", 150, 26, function()
-    local PP = Panoply.PolestarParty
+    local PP = Panoply.PanoplyGuideParty
     if PP and PP.RequestSync then PP:RequestSync() end
     Menu:RefreshCurrent()
   end, "Sync to my step", "Asks your partner to come to your guide and step. They see the question and choose; nothing moves by itself.")

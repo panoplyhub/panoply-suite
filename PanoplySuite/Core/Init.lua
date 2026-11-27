@@ -4,7 +4,7 @@ local ADDON, Panoply = ...
 Panoply = Panoply or {}
 
 Panoply.name    = "Panoply Suite"
-Panoply.version = "0.9.9.4"
+Panoply.version = "0.9.9.6"
 Panoply.prefix  = "HPATH1"          -- addon message prefix (<=16 chars)
 Panoply.debugLog = {}
 
@@ -172,7 +172,7 @@ Panoply.defaults = {
     -- 0.9.7 (Nov 18 2026; two NEW keys): the levelling styles are gone. The old key levellingStyle has no default any more: it
     -- stays in a saved file exactly as it was and is never read again (it is turned into groupQuests once, in InitDB below).
     groupQuests = "ask",     -- "ask" | "do" | "skip": Ask me each time / Always include them / Leave them out (Engine/Difficulty.lua)
-    partyShare = true,       -- level together: share guide progress with my party and show theirs (Engine/PolestarParty.lua); off = nothing sent or shown
+    partyShare = true,       -- level together: share guide progress with my party and show theirs (Engine/PanoplyGuideParty.lua); off = nothing sent or shown
     autoExtendPlan = true,   -- when a plan runs out, plan the next few levels automatically
     autoReplan = true,       -- 0.7: re-plan when the plan no longer fits (abandon, level, moved, not offered)
     dropOnReplan = true,     -- 0.5.7: after Replan, offer to drop quests the new route doesn't use (asks first)
@@ -560,7 +560,7 @@ function Panoply:OldRouteForTests()
 end
 function Panoply:GuideUnavailable()
   if self:PlayAlong() then return false end                    -- playing along: the guide is off by the player's own choice
-  local PS = self.PolestarEngine
+  local PS = self.PanoplyGuideEngine
   if PS ~= nil and PS.on == true then return false end         -- the guide engine runs
   return not self:OldRouteForTests()
 end

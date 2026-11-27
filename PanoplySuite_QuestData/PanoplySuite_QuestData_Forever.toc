@@ -2,7 +2,7 @@
 ## Title: Panoply Suite Quest Data
 ## Notes: Quest, NPC, object, item, zone, profession, gathering and class trainer data for Panoply Suite, generated from the VMaNGOS world database.
 ## Author: Panoply Suite
-## Version: 0.9.9.4
+## Version: 0.9.9.6
 ## DefaultState: enabled
 ## X-License: GPL-3.0-only (see LICENSE and NOTICE.md)
 ## X-Flavor: WoW Forever (Camelot)

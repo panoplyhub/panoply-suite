@@ -293,7 +293,7 @@ end
 P.RETIRED_KEYS = { "levellingStyle" }
 
 -- 0.9.7: settings a profile carried once and must not any more (partyShare: what you share with other players is the account's
--- own choice, Engine/PolestarParty.lua names it in P.NOT_COVERED). Not captured or applied; a value a saved copy of a profile
+-- own choice, Engine/PanoplyGuideParty.lua names it in P.NOT_COVERED). Not captured or applied; a value a saved copy of a profile
 -- already holds is ignored and carried along untouched (P:SaveCurrent), never deleted from the save.
 P.DROPPED_KEYS = { "partyShare" }
 

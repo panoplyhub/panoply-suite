@@ -30,7 +30,7 @@
 --     points to ("Stormwind Bank", "The Great Forge", "Deeprun Tram"). They come from PanoplySuite_QuestData/Maps/Landmarks.lua
 --     (tools/build_landmarks.py: the client's own AreaPOI town labels, and VMaNGOS's guard points of interest and inn rest areas). The
 --     towns are also the "where" words of every place, so a search by town works when the route data is not loaded (WoW Forever with
---     Polestar's guide: Route:Data() is nil there on purpose, and before this every place lost its town). A text that names a town or
+--     PanoplyGuide's guide: Route:Data() is nil there on purpose, and before this every place lost its town). A text that names a town or
 --     zone lists that town's places before the quests that merely mention it (Find.lua).
 -- No automatic movement (hub rule 2 of CLAUDE.md): this file moves nothing, targets nothing, casts nothing. It adds waypoints; the arrow
 -- shows the way and the player walks.

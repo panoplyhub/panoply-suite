@@ -46,72 +46,87 @@ The whole suite has to be version 3 because the leveling guides (below) are Pole
   database files themselves carry no notice of their own. Until Nov 12 2026 the data add-ons were labelled
   GPL-2.0-only; that "only" was our own wording, not VMaNGOS's.
 
-## Polestar, bundled (WoW Forever only; Nov 2026; repackaged inside Panoply Suite's folders since 0.9.5)
+## The guide engine: Polestar, bundled as a modified version (WoW Forever only; Nov 2026)
 On WoW Forever the leveling guide, the walking routes, the arrow's target and the travel plan come from **Polestar** by
-Fitz and the Polestar authors, which ships inside the Panoply Suite package. Thank you, Fitz.
+Fitz and the Polestar authors (https://github.com/fitzforge/polestar, GPL-3.0), which ships inside the Panoply Suite
+package as a modified version. Thank you, Fitz. In the game and in Panoply Suite's folders it carries Panoply's names,
+not Polestar's (see "Renamed" below); this file, the licence files and `GuideEngine/PANOPLY-CHANGES.md` are where its
+authors are credited.
 - **What:** Polestar release **v0.4.2.1**, revision `4e1cd841c94d41348635d7c67a7280c8ad9960c5` (https://github.com/fitzforge/polestar/releases/tag/v0.4.2.1),
   Copyright (c) 2026 The Polestar authors. Every folder of that release's `addon/` directory except the ones listed
-  below, 803 files in 28 folders: `Polestar`, `Polestar_Options` (the settings), `Polestar_Nav`, `Polestar_Nav_EK`,
-  `Polestar_Nav_Kalimdor` (the walking-map regions are files inside these three folders), `Polestar_Guides`,
-  `Polestar_Guides_Alliance`, `Polestar_Guides_Horde`, the nine race guide folders (`Polestar_Guides_Human` ...
-  `Polestar_Guides_Troll`, each with `Legs.lua`), the nine language folders (`Polestar_deDE` ... `Polestar_zhTW`),
-  `Polestar_ItemDB` and `Polestar_Recorder`.
+  below, 803 files in 28 folders. In Polestar's release they are called `Polestar`, `Polestar_Options` (the settings),
+  `Polestar_Nav`, `Polestar_Nav_EK`, `Polestar_Nav_Kalimdor` (the walking-map regions are files inside these three
+  folders), `Polestar_Guides`, `Polestar_Guides_Alliance`, `Polestar_Guides_Horde`, the nine race guide folders
+  (`Polestar_Guides_Human` ... `Polestar_Guides_Troll`, each with `Legs.lua`), the nine language folders
+  (`Polestar_deDE` ... `Polestar_zhTW`), `Polestar_ItemDB` and `Polestar_Recorder`.
 - **Left out (0.9.9):** `Polestar_Arcade`, `Polestar_Experimental`, `Polestar_Looks`, `Polestar_SkinAPI` and the ten
   `Polestar_Skin_*` folders of that release are not part of Panoply Suite. Polestar's own code looks for them when it needs
   them and runs without them; no file of Polestar's code was edited to leave them out.
-- **Where (0.9.5):** the game's AddOns list showed Polestar's folders (27 then) as one row each, so they now ship inside Panoply Suite's
-  own folders, each folder whole and under its own name: `PanoplySuite/Polestar/<folder>/` for all but the languages,
-  `PanoplySuite_Languages/<folder>/` (a load-on-demand add-on) for the nine language folders. A folder called `Polestar`
-  that holds only a TOC and a README is Panoply Suite's saved-data stand-in (it keeps the old saved guide progress
-  loading), not Polestar.
-- **Packaging changed, and the files `Polestar/PANOPLY-CHANGES.md` lists:** apart from those listed changes and two fixed,
-  mechanical packaging rules, no file's content is changed, and no file of an included folder is renamed, added or left out. Every Lua file a Polestar TOC loads gets one wrapper on its first and
+- **Where (0.9.5):** the game's AddOns list showed Polestar's folders (27 then) as one row each, so they ship inside Panoply
+  Suite's own folders, each folder whole: `PanoplySuite/GuideEngine/<folder>/` for all but the languages,
+  `PanoplySuite_Languages/<folder>/` (a load-on-demand add-on) for the nine language folders.
+- **Renamed (0.9.9.5, 25 November 2026):** in this copy every name of Polestar's own is replaced by a name of Panoply
+  Suite's: `Polestar` becomes `PanoplyGuide` (and `polestar`, `POLESTAR` likewise) in every folder name, file name, TOC
+  field, saved-data name, global name, frame name, slash command, key-binding name, hidden-message prefix and text of the
+  `.lua`, `.toc`, `.xml` and `.json` files, and three web addresses of Polestar's project are replaced by Panoply Suite's.
+  So the folders above are `PanoplyGuide`, `PanoplyGuide_Options`, `PanoplyGuide_Nav` ... `PanoplyGuide_zhTW` here. This
+  was done so that this copy shares no folder, saved-data name or global with the Polestar add-on (both can be installed;
+  neither overwrites the other) and so that the game shows no name but the add-on's own. Copyright comment lines and
+  every licence, credit and data-source file are left exactly as Polestar's authors wrote them.
+  `GuideEngine/PANOPLY-CHANGES.md` has the full table and is the notice of modification that section 5(a) of the GPL-3.0
+  asks for. There is no folder called `Polestar` in Panoply Suite any more (0.9.5 to 0.9.9.4 shipped a small saved-data
+  stand-in under that name).
+- **Packaging, and the files `GuideEngine/PANOPLY-CHANGES.md` lists:** apart from the renames, those listed changes and
+  two fixed, mechanical packaging rules, no file's content is changed, and no file of an included folder is added or left
+  out. Every Lua file a Polestar TOC loads gets one wrapper on its first and
   last line (`PanoplySuiteBundle.File("<folder>", "<path>", function(...)` ... `end)`) so it runs under its own folder's
   name, at the moment the game would have run it (`Core/Bundle.lua`, Panoply Suite's own loader); and in those files the
   folder name in a picture, font or sound path (`"Interface\\AddOns\\" .. NAME .. ...`) is looked up through
-  `PanoplySuiteBundle.Dir(NAME)`, because the folder moved. Everything else (pictures, sounds, fonts, licences, credits,
-  TOC and XML files), apart from the files `PANOPLY-CHANGES.md` lists, is byte for byte Polestar's. The XML files only list Lua files; Panoply Suite's WoW Forever TOCs
-  list the same files in the same order. `tools/polestar_engine_manifest.json` lists the sha256 of every file of
-  Polestar's release, and `python3 tools/update_polestar_engine.py --check` (run by the test suite and by the release
-  build) undoes the two rules and compares every file with it, and with the download when there is one. Polestar's key
-  bindings file (`Bindings.xml`, which the game reads only from an add-on's top folder) is shipped but not active.
-- **Licences, as Polestar's own files state them:**
+  `PanoplySuiteBundle.Dir(NAME)`, because the folder moved. Pictures, sounds, fonts, licences and credits are byte for
+  byte Polestar's. The XML files only list Lua files; Panoply Suite's WoW Forever TOCs
+  list the same files in the same order. In Panoply Suite's source, `tools/polestar_engine_manifest.json` lists the sha256
+  of every file of Polestar's release, and `python3 tools/update_polestar_engine.py --check` (run by the test suite and by
+  the release build) undoes the renames and the two rules and compares every file with it, and with the download when
+  there is one. Polestar's key bindings file (`Bindings.xml`, which the game reads only from an add-on's top folder) is
+  shipped but not active.
+- **Licences, as Polestar's own files state them** (folders by their names in Polestar's release):
   - `Polestar`, the guide folders, the language folders, `Polestar_ItemDB`, `Polestar_Recorder`: **GPL-3.0-only**
     (each TOC's `X-License`). Polestar's main folder carries no licence file of its own, so Polestar's `LICENSE`
     (the GNU GPL version 3), `LICENSE-EXCEPTION.md` and `THIRD_PARTY.md` are copied, unchanged, into
-    `Licenses/Polestar/` of this folder.
-  - `Polestar_Nav`, `Polestar_Nav_EK`, `Polestar_Nav_Kalimdor`: **GPL-3.0-or-later** (`Polestar/Polestar_Nav/LICENSE`,
-    `Polestar/Polestar_Nav/CREDITS.md`). The walking router: "Polestar's walking router started from Shortest Path Forever
-    v1.16.0 by Cillian Berragan, with thanks; Polestar maintains it since 2026-10-16" (Polestar_Nav/CREDITS.md);
+    `Licenses/GuideEngine/` of this folder.
+  - `Polestar_Nav`, `Polestar_Nav_EK`, `Polestar_Nav_Kalimdor`: **GPL-3.0-or-later** (`GuideEngine/PanoplyGuide_Nav/LICENSE`,
+    `GuideEngine/PanoplyGuide_Nav/CREDITS.md`). The walking router: "Polestar's walking router started from Shortest Path Forever
+    v1.16.0 by Cillian Berragan, with thanks; Polestar maintains it since 2026-10-16" (that CREDITS.md);
     Shortest Path Forever, https://github.com/cjber/shortest-path-forever, GPL-3.0-or-later, Copyright (C) 2026
-    Cillian Berragan. His copyright notices stay in the files that carry them (`Polestar_Nav/Routing/`, and the files of
-    `Polestar/` that CREDITS.md lists as adapted from his work).
-  - **Leffe's navigation maps:** the walking maps in `Polestar_Nav`, `Polestar_Nav_EK` and `Polestar_Nav_Kalimdor`
+    Cillian Berragan. His copyright notices stay, unchanged, in the files that carry them (the router's `Routing/` folder,
+    and the files of the main folder that CREDITS.md lists as adapted from his work).
+  - **Leffe's navigation maps:** the walking maps in the three Nav folders
     (maps format 5) are, in Polestar's words, "Leffe's navigation maps, condensed for the game ... with his permission",
     and the walks baked into the race guide folders (`Legs.lua`) were drawn on Leffe's navigation maps and are
     published by Polestar "with his permission and the credit 'Leffe's navigation maps'" (Polestar's THIRD_PARTY.md).
     Credit: **Leffe's navigation maps**. Leffe's permission was given to Polestar's author; Panoply Suite ships these
-    files only as part of Polestar's release, content unchanged (repackaged as above), under the licence Polestar
+    files only as part of Polestar's release (repackaged and renamed as above), under the licence Polestar
     publishes them under.
-  - Data notices (`LICENSE-DATA.txt` in the guide, language and item folders and in `Polestar/Gear/`, `CREDITS.md` in
-    the language folders) and the font licences in `Polestar/Media/Fonts/` ship where Polestar put them, inside the
-    folders above.
-- **How Panoply Suite uses it:** `Core/Bundle.lua` (Panoply Suite's own code, GPL-3.0-only) runs Polestar's files: each
-  folder under its own name and private table, at the moments the game used (Polestar's main folder as Panoply Suite
-  loads, its guides and Recorder right after it starts, the load-on-demand folders when Polestar asks for them), and it
-  answers Polestar's own questions about its add-on folders from their TOCs. `Engine/PolestarEngine.lua` (Panoply
-  Suite's own code) calls Polestar's functions; neither copies any of Polestar's code. It keeps Polestar's own windows,
-  arrow and buttons hidden through Polestar's own switch and draws Polestar's step, arrow target and route in Panoply
-  Suite's windows. It sets four of Polestar's settings (its minimap button, its game menu button, automatic quest
-  accept and hand-in) and keeps what each was. Polestar keeps its own saved data under its own names (`PolestarDB`,
-  `PolestarCharDB`, `PolestarRecorderDB`, `PolestarRecorderCharDB`), saved with Panoply Suite's since 0.9.5; the
-  stand-in keeps the older saved files loading so each character's progress is taken over once.
-- **With the real Polestar installed too:** a full Polestar in its own folders, newer than the bundled one, is kept by
-  Panoply Suite's installers, and in the game it runs instead of the bundled copy (`Core/Bundle.lua` stays off).
-- **Classic Era:** Polestar does not load there. The guides converted from Polestar's guide text (next section) and
-  Panoply Suite's own engine, router and route data are what runs, as before.
-- **To update:** `python3 tools/update_polestar_engine.py --src <Polestar checkout>` (see the tool's notes); after a
-  Panoply Suite version bump, `python3 tools/update_polestar_engine.py --refresh`.
+  - Data notices (`LICENSE-DATA.txt` in the guide, language and item folders and in the main folder's `Gear/`, `CREDITS.md`
+    in the language folders) and the font licences in the main folder's `Media/Fonts/` ship where Polestar put them,
+    inside the folders above, unchanged.
+- **How Panoply Suite uses it:** `Core/Bundle.lua` (Panoply Suite's own code, GPL-3.0-only) runs the engine's files: each
+  folder under a name and private table of its own, at the moments the game used (the main folder as Panoply Suite
+  loads, its guides and Recorder right after it starts, the load-on-demand folders when the engine asks for them), and it
+  answers the engine's own questions about its add-on folders from their TOCs. `Engine/PanoplyGuideEngine.lua` (Panoply
+  Suite's own code) calls the engine's functions; neither copies any of Polestar's code. It keeps the engine's own windows,
+  arrow and buttons hidden through the engine's own switch and draws its step, arrow target and route in Panoply
+  Suite's windows. It sets four of the engine's settings (its minimap button, its game menu button, automatic quest
+  accept and hand-in) and keeps what each was. The engine's saved data is saved with Panoply Suite's, under the names
+  `PanoplyGuideDB`, `PanoplyGuideCharDB`, `PanoplyGuideRecorderDB` and `PanoplyGuideRecorderCharDB` (0.9.5 to 0.9.9.4
+  saved the same tables there as `PolestarDB`, `PolestarCharDB`, `PolestarRecorderDB` and `PolestarRecorderCharDB`;
+  `Core/Bundle.lua` moves each to its new name once, the first time a character logs in after the update).
+- **With the Polestar add-on installed too:** since 0.9.9.5 the two share no folder, saved-data name, global or
+  hidden-message prefix, so both load and run side by side and neither touches the other's files or saved data.
+  Panoply Suite's installers never change a Polestar folder that is not Panoply Suite's own old stand-in.
+- **Classic Era:** the engine does not load there.
+- **To update (Panoply Suite's source):** `docs/polestar-update.md`; the tools apply the renames by themselves and
+  refuse a build in which Polestar's name would reach a shipped folder, file, TOC field, saved-data name or text.
 
 ## Leveling guides converted from Polestar's guide text (0.8.0, Data/Guides/; Classic Era, and WoW Forever without Polestar)
 - **Source:** Polestar, https://github.com/fitzforge/polestar, Copyright (c) 2026 The Polestar authors, licensed under

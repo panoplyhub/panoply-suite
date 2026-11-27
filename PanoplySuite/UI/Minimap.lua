@@ -35,7 +35,7 @@ end
 
 -- Right-click opens the one Panoply Suite window on the page that was open last (Home the first time in a play session: Menu:Resolve).
 -- Ctrl-click is a small menu of quick switches (Step 2 B-07): each one turns something on or off at once, with no window. It ends
--- in "All settings...". Left-click on this button shows or hides the guide window (also a button in the Guide's gear; /ps guide).
+-- in "All settings...". Left-click on this button shows or hides the guide window (also a button in the Guide's gear; /panoply guide).
 -- "Hide this button" is the Minimap button setting in Help's gear (/panoply minimap brings the button back).
 -- MM.SWITCHES is the list of switches; each is { id, text, tip, only = fn, get = fn -> bool, set = fn(bool) }.
 -- "Connections" (Step 2 item E, the Map module) turns the zone connections on the

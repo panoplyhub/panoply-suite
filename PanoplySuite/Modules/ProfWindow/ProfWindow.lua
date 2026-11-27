@@ -1417,7 +1417,7 @@ local function railButton(parent, secure)
   if b.RegisterForClicks then b:RegisterForClicks("AnyUp") end
   -- 0.9.6 phase K: the game hands a secure button its click as a press when useOnKeyDown is not set (the ActionButtonUseKeyDown
   -- setting, on by default) and this one listens to the release only: it did nothing. It now acts on the release (as phase F's
-  -- Turn off button and Polestar's Target button).
+  -- Turn off button and PanoplyGuide's Target button).
   if secure then b:SetAttribute("useOnKeyDown", false) end
   b.bg = Skin.Box(b, "S", { fill = Skin.colors.card, fillA = 1, line = Skin.colors.hairline })
   b.icon = b:CreateTexture(nil, "ARTWORK")

@@ -1,0 +1,51 @@
+<Bindings>
+	<Binding name="PANOPLYGUIDE_TOGGLE" category="PanoplyGuide">
+		PanoplyGuide.Bindings.Toggle()
+	</Binding>
+	<Binding name="PANOPLYGUIDE_HIDE" category="PanoplyGuide">
+		PanoplyGuide.Bindings.Hide()
+	</Binding>
+	<Binding name="PANOPLYGUIDE_NEXT" category="PanoplyGuide">
+		PanoplyGuide.Bindings.Next()
+	</Binding>
+	<Binding name="PANOPLYGUIDE_PREV" category="PanoplyGuide">
+		PanoplyGuide.Bindings.Prev()
+	</Binding>
+	<Binding name="PANOPLYGUIDE_FOCUS" category="PanoplyGuide">
+		PanoplyGuide.Bindings.Focus()
+	</Binding>
+	<Binding name="PANOPLYGUIDE_MENU" category="PanoplyGuide">
+		PanoplyGuide.Bindings.Menu()
+	</Binding>
+	<Binding name="PANOPLYGUIDE_OPTIONS" category="PanoplyGuide">
+		PanoplyGuide.Bindings.Options()
+	</Binding>
+	<Binding name="PANOPLYGUIDE_REPORT" category="PanoplyGuide">
+		PanoplyGuide.Bindings.Report()
+	</Binding>
+	<Binding name="PANOPLYGUIDE_NEXT_WAYPOINT" category="PanoplyGuide">
+		PanoplyGuide.Bindings.NextWaypoint()
+	</Binding>
+	<Binding name="PANOPLYGUIDE_PREV_WAYPOINT" category="PanoplyGuide">
+		PanoplyGuide.Bindings.PrevWaypoint()
+	</Binding>
+	<Binding name="PANOPLYGUIDE_REOPEN_TAB" category="PanoplyGuide">
+		PanoplyGuide.Bindings.ReopenTab()
+	</Binding>
+	<Binding name="PANOPLYGUIDE_PAUSE" category="PanoplyGuide">
+		PanoplyGuide.Bindings.Pause()
+	</Binding>
+	<Binding name="PANOPLYGUIDE_MARK_JUNK" category="PanoplyGuide">
+		PanoplyGuide.Bindings.MarkJunk()
+	</Binding>
+	<Binding name="PANOPLYGUIDE_MARK_KEEP" category="PanoplyGuide">
+		PanoplyGuide.Bindings.MarkKeep()
+	</Binding>
+	<Binding name="CLICK PanoplyGuideQuestItemButton:LeftButton" category="PanoplyGuide"/>
+	<Binding name="CLICK PanoplyGuideTargetButton:LeftButton" category="PanoplyGuide"/>
+	<Binding name="CLICK PanoplyGuideRareButton:LeftButton" category="PanoplyGuide"/>
+	<Binding name="CLICK PanoplyGuideHearthButton:LeftButton" category="PanoplyGuide"/>
+	<Binding name="CLICK PanoplyGuideStepButton:LeftButton" category="PanoplyGuide"/>
+	<Binding name="CLICK PanoplyGuideTravelButton:LeftButton" category="PanoplyGuide"/>
+	<Binding name="CLICK PanoplyGuideBagButton:LeftButton" category="PanoplyGuide"/>
+</Bindings>

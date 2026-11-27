@@ -122,19 +122,19 @@ function UI.StepIconName(step)
 end
 
 -------------------------------------------------------------------------------
--- 0.9.7 (WoW Forever only): levelling with a partner, in this window. Everything it draws comes from Engine/PolestarParty.lua
--- (PolestarParty:Enabled, :PartnerLine, :Card, :Waiting) and, through its card, Engine/PartnerHold.lua; nothing is worked out here.
+-- 0.9.7 (WoW Forever only): levelling with a partner, in this window. Everything it draws comes from Engine/PanoplyGuideParty.lua
+-- (PanoplyGuideParty:Enabled, :PartnerLine, :Card, :Waiting) and, through its card, Engine/PartnerHold.lua; nothing is worked out here.
 --   the partner line   one line about the partner above the step card, with "Sync to my step" beside it
 --   the partner card   the sync question, the class-quest hold or the help-your-partner step, with its buttons
 --   the waiting line   "Waiting for <name> before handing in <quest>" under the step card
--- The card PolestarParty:Card() gives (a table; every field but title may be left out):
+-- The card PanoplyGuideParty:Card() gives (a table; every field but title may be left out):
 --   kind    = "sync" | "wait" | "hold" | "help" | "ahead"   (picks the small line over the title when kicker is left out)
 --   kicker  = the small line over the title
 --   title   = the card's headline                 ("Partner asks you to sync to their guide.")
 --   body    = the words under it                  ("Their step: Kill 8 Kobold Vermin")
 --   lines   = up to UI.PARTNER_LINES more lines   (what the partner still needs)
 --   buttons = up to UI.PARTNER_BUTTONS of { label =, tip =, fn = function(card) end } or { label =, tip =, action = "Accept" }
---             (action: the name of a PolestarParty or PartnerHold call: Accept, Decline, GoOn, Help, StopHelp, RequestSync, Release)
+--             (action: the name of a PanoplyGuideParty or PartnerHold call: Accept, Decline, GoOn, Help, StopHelp, RequestSync, Release)
 -- Its rows are built with the window (UI:Create, at login), never when a card arrives. In a fight nothing of it appears or goes: what
 -- changed is drawn when the fight ends.
 -------------------------------------------------------------------------------
@@ -154,7 +154,7 @@ end
 
 -- The partner line (and whether "Sync to my step" goes beside it) and the partner card to draw now, or nil for each.
 function UI:PartnerParts()
-  local PP = Panoply.PolestarParty
+  local PP = Panoply.PanoplyGuideParty
   local line, canSync, card
   if PP and PP.Enabled and PP:Enabled() and not Panoply:PlayAlong() then
     if PP.PartnerLine then line, canSync = PP:PartnerLine() end
@@ -187,12 +187,12 @@ local function partnerButtons(card)
 end
 UI.PartnerButtons = partnerButtons
 
--- A click on the card's button i: the card's own function, or the PolestarParty / PartnerHold call it names.
+-- A click on the card's button i: the card's own function, or the PanoplyGuideParty / PartnerHold call it names.
 function UI:PartnerButton(i)
   local card = self.partnerDrawn and self.partnerDrawn.card
   local b = card and partnerButtons(card)[i]
   if not b then return false end
-  local PP, PH = Panoply.PolestarParty, Panoply.PartnerHold
+  local PP, PH = Panoply.PanoplyGuideParty, Panoply.PartnerHold
   if type(b.fn) == "function" then b.fn(card)
   elseif type(b.action) == "string" and PP and type(PP[b.action]) == "function" then PP[b.action](PP)
   elseif type(b.action) == "string" and PH and type(PH[b.action]) == "function" then PH[b.action](PH)
@@ -203,7 +203,7 @@ end
 
 -- "Sync to my step" beside the partner line
 function UI:PartnerSync()
-  local PP = Panoply.PolestarParty
+  local PP = Panoply.PanoplyGuideParty
   if not (PP and type(PP.RequestSync) == "function") then return false end
   local sent = PP:RequestSync()
   self:Refresh()
@@ -212,7 +212,7 @@ end
 
 -- The waiting line: a quest this step hands in that the partner still needs -> the words, or nil
 function UI:PartnerWaiting(step)
-  local PP = Panoply.PolestarParty
+  local PP = Panoply.PanoplyGuideParty
   if not (step and PP and PP.Enabled and PP.Waiting and PP:Enabled()) then return nil end
   for _, g in ipairs(step.goals or {}) do
     if g.type == "turnin" and type(g.questID) == "number" and g.status ~= "done" and g.status ~= "hidden" then
@@ -220,7 +220,7 @@ function UI:PartnerWaiting(step)
       if waits then
         local name
         for _, q in ipairs(Panoply.StepText.Quests(step)) do if q.id == g.questID then name = q.name end end
-        -- who: a name, or the list of names PolestarParty:Waiting gives
+        -- who: a name, or the list of names PanoplyGuideParty:Waiting gives
         if type(who) == "table" then who = #who > 0 and PP.NameList and PP.NameList(who) or nil end
         return UI.WAITING_HANDIN:format(type(who) == "string" and who ~= "" and who or "your partner", name and ("'" .. name .. "'") or "this quest")
       end
@@ -229,11 +229,11 @@ function UI:PartnerWaiting(step)
   return nil
 end
 
--- True when the guide engine cannot run on WoW Forever. Engine/PolestarEngine.lua says so (PolestarEngine:Unavailable); without
+-- True when the guide engine cannot run on WoW Forever. Engine/PanoplyGuideEngine.lua says so (PanoplyGuideEngine:Unavailable); without
 -- that call: the engine is not there and nothing else builds a route.
 function UI:NoEngine()
   if C.Flavor() ~= "forever" then return false end
-  local PE = Panoply.PolestarEngine
+  local PE = Panoply.PanoplyGuideEngine
   if PE and type(PE.Unavailable) == "function" then return PE:Unavailable() and true or false, true end
   if PE and PE:Present() then return false end
   local P = Panoply.Planner
@@ -528,7 +528,7 @@ function UI:Create()
   self.where = Skin.Text(f, 10, Skin.colors.inkSoft)
   self.where:SetPoint("TOPLEFT", self.title, "BOTTOMLEFT", 0, -1)
   self.where:Hide()
-  local close = Skin.IconButton(f, "x", 20, function() UI:Hide() end, "Hide the guide", "Hide this window. Left-click the minimap button or type /ps guide to bring it back.")
+  local close = Skin.IconButton(f, "x", 20, function() UI:Hide() end, "Hide the guide", "Hide this window. Left-click the minimap button or type /panoply guide to bring it back.")
   close:SetPoint("TOPRIGHT", f, "TOPRIGHT", -10, -11)
   local menu = Skin.Button(f, "Menu", 56, 20, function() Panoply.Menu:Toggle() end, "Open Panoply Suite", "The one Panoply Suite window: the Guide, Muster, Class, professions and every setting.")
   menu:SetPoint("RIGHT", close, "LEFT", -6, 0)
@@ -997,8 +997,8 @@ function UI:Refresh()
   -- Dungeon helper: a dungeon step (Engine/Dungeon.lua) has its own list; the levelling route waits under it
   local DG = step and step.isDungeon and Panoply.Dungeon or nil
   local finished = step and not prof and not DG and not step.ps and E.index >= #E.steps and E:IsComplete(E.index)
-  -- WoW Forever with Polestar's engine: a question the guide waits on (the next zone, a group quest, a quest that left the log)
-  local PE = Panoply.PolestarEngine
+  -- WoW Forever with PanoplyGuide's engine: a question the guide waits on (the next zone, a group quest, a quest that left the log)
+  local PE = Panoply.PanoplyGuideEngine
   local psOn = PE and PE:Active()
   local ask = psOn and not prof and not DG and not (step and step.isTravel) and PE:Question() or nil
   self.psAsk = ask
@@ -1553,7 +1553,7 @@ function UI:OpenWindowMenu()
   local items = {
     { text = Panoply.db.windowLocked and "Unlock window" or "Lock window", checked = Panoply.db.windowLocked,
       tip = "A locked window can't be dragged or resized.", func = function() Panoply:SetOption("windowLocked", not Panoply.db.windowLocked) end },
-    { text = "Hide guide window", tip = "Bring it back with a left-click on the minimap button or /ps guide.", func = function() UI:Hide() end },
+    { text = "Hide guide window", tip = "Bring it back with a left-click on the minimap button or /panoply guide.", func = function() UI:Hide() end },
     { text = "Reset size", tip = "Back to the standard width.", func = function() UI:ResetSize() end },
     { text = "All settings...", tip = "Opens the Guide's settings, on the guide window.", func = function() Panoply.Menu:OpenGear("guide", "window") end },
   }

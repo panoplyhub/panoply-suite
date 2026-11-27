@@ -1,0 +1,188 @@
+PanoplySuiteBundle.File("PanoplyGuide", "Gear/Tooltip.lua", function(...) -- Gear lines on item tooltips (bags, loot, vendors, quest rewards, chat
+-- links, dungeon loot: every item tooltip PanoplyGuide.Hooks sees):
+--   * is it an upgrade at this level, against what it would replace
+--     ("PanoplyGuide   +12.4% upgrade · Head"; with Forever Leveling BiS's gains,
+--     in its score points as its own tooltip shows them, and their share of
+--     what the item replaces: "PanoplyGuide   +6.1 (+8%) upgrade · Head")
+--   * on a quest reward choice, whether it is the one to take ("Best pick"),
+--     when that pick is an upgrade; with none, the reward panel's own mark
+--     (QoL: the choice that sells for most) decides, so nothing is said here
+--   * under those, the weights they were scored with and where they came
+--     from (Gear.ScoredFor: "Scored for Arcane, from your talents", #2035)
+--
+--   Gear.TooltipLine(link) -> left, right, r, g, b, scored | nil   (the upgrade line;
+--       scored: it rests on the weights, not on the item being unusable)
+--
+-- Work happens only when a tooltip shows. The comparison is cached per link
+-- (Gear.CompareToEquipped) and the reward pick per item (Gear.ChoiceOf);
+-- both caches clear on GEAR_UPDATED (spec, level, equipment, item data).
+-- Lines are added through PanoplyGuide.Hooks (Core/Hooks.lua: GameTooltip and
+-- ItemRefTooltip, forbidden tooltips and secret links skipped, lines added
+-- once per show).
+
+local ADDON, ns = ...
+
+local Gear = ns.Gear
+local L = ns.L
+
+local type, ipairs = type, ipairs
+local abs = math.abs
+
+local SAME = 0.05 -- percent: closer than this reads as "same"
+
+-- Equipment slot -> the client's global naming it (HEADSLOT, ...): the
+-- tooltip line names the slot in the game's own word, in every language.
+local SLOT_GLOBAL = {
+	[1] = "HEADSLOT", [2] = "NECKSLOT", [3] = "SHOULDERSLOT", [5] = "CHESTSLOT", [6] = "WAISTSLOT", [7] = "LEGSSLOT",
+	[8] = "FEETSLOT", [9] = "WRISTSLOT", [10] = "HANDSSLOT", [11] = "FINGER0SLOT", [12] = "FINGER0SLOT",
+	[13] = "TRINKET0SLOT", [14] = "TRINKET0SLOT", [15] = "BACKSLOT", [16] = "MAINHANDSLOT", [17] = "SECONDARYHANDSLOT",
+	[18] = "RANGEDSLOT",
+}
+
+-- -> the slot's name in the client's language, or nil for a slot without one.
+function Gear.SlotName(slot)
+	local tag = SLOT_GLOBAL[slot]
+	local s = tag and _G[tag]
+	if type(s) == "string" and s ~= "" then return s end
+	return nil
+end
+
+-- A palette colour as it reads on the game's tooltip (Theme.TipColor).
+local function color(name, fr, fg, fb)
+	local T = ns.Theme
+	if T and T.TipColor then
+		local r, g, b = T.TipColor(name)
+		if r then return r, g, b end
+	end
+	return fr, fg, fb
+end
+
+local PREFIX = L["PanoplyGuide"]
+
+local REASON = {
+	class = L["not for your class"], armor = L["armor you cannot wear"],
+	weapon = L["weapon you cannot use"], dualwield = L["needs Dual Wield"],
+	skill = L["weapon skill not trained"],
+}
+
+function Gear.TooltipLine(link)
+	local r = Gear.CompareToEquipped(link)
+	if not r or r.equipped then return nil end
+	if not r.usable then
+		if not r.reason then return nil end
+		local cr, cg, cb = color("textMuted", 0.5, 0.54, 0.63)
+		return PREFIX, REASON[r.reason], cr, cg, cb, false
+	end
+	if not r.delta then return nil end
+	local right, cr, cg, cb
+	local later = (r.minLevel or 0) > (Gear.PlayerLevel and Gear.PlayerLevel() or 0)
+	if r.empty then
+		-- Forever Leveling BiS's gain over nothing, in its score points.
+		right = L["upgrade (empty slot)"]
+		if r.flbis and r.delta >= Gear.FLB_GAIN then right = Gear.PointsText(r.delta) .. " " .. right end
+		cr, cg, cb = color("success", 0.42, 0.85, 0.6)
+	elseif r.flbis then
+		-- Forever Leveling BiS's gain, in its score points, with its share of
+		-- the worn piece it measures against where there is one (Gear.PointsText).
+		if abs(r.delta) < Gear.FLB_GAIN then
+			right = L["same as equipped"]
+			cr, cg, cb = color("textMuted", 0.5, 0.54, 0.63)
+		elseif r.delta > 0 then
+			local text, outsized = Gear.PointsText(r.delta, r.pct)
+			right = outsized and text or (text .. " " .. L["upgrade"])
+			cr, cg, cb = color("success", 0.42, 0.85, 0.6)
+		else
+			right = Gear.PointsText(r.delta, r.pct) .. " " .. L["downgrade"]
+			cr, cg, cb = color("danger", 0.96, 0.45, 0.45)
+		end
+	elseif not r.pct or abs(r.pct) < SAME then
+		right = L["same as equipped"]
+		cr, cg, cb = color("textMuted", 0.5, 0.54, 0.63)
+	elseif r.pct > 0 then
+		local text, outsized = Gear.GainText(r.pct)
+		right = outsized and text or (text .. " " .. L["upgrade"])
+		cr, cg, cb = color("success", 0.42, 0.85, 0.6)
+	else
+		right = Gear.GainText(r.pct) .. " " .. L["downgrade"]
+		cr, cg, cb = color("danger", 0.96, 0.45, 0.45)
+	end
+	if later and (r.empty or (r.flbis and r.delta >= Gear.FLB_GAIN) or (not r.flbis and r.pct and r.pct > 0)) then
+		right = right .. " " .. L["at level"] .. " " .. r.minLevel
+		cr, cg, cb = color("warning", 0.98, 0.75, 0.3)
+	end
+	local slotName = r.slot and not r.empty and Gear.SlotName(r.slot)
+	if slotName then right = right .. " · " .. slotName end
+	return PREFIX, right, cr, cg, cb, true
+end
+
+-- -> whether a line was added
+local function pickLine(id, out)
+	local c = Gear.ChoiceOf(id)
+	if not (c and c.pick and c.pick.upgrade) then return false end
+	local lr, lg, lb = color("textDim", 0.69, 0.72, 0.8)
+	local q = c.quest.name or (L["Quest"] .. " " .. c.quest.id)
+	if c.isPick then
+		local r, g, b = color("success", 0.42, 0.85, 0.6)
+		out[#out + 1] = { L["Best pick"], q, lr, lg, lb, r, g, b }
+	else
+		local r, g, b = color("textMuted", 0.5, 0.54, 0.63)
+		local name = ns.ItemDB.ItemName(c.pick.entry.id) or (L["Item"] .. " " .. c.pick.entry.id)
+		out[#out + 1] = { L["Reward pick"], name, lr, lg, lb, r, g, b }
+	end
+	return true
+end
+
+-- A Hunter fights at range, so a melee weapon counts for its stats, not its
+-- damage (#2229). Said once, under PanoplyGuide's score line, where it comes up:
+-- a quest reward choice, or a weapon whose skill is under half its cap (a
+-- staff a Hunter has just trained). Not while Forever Leveling BiS scores.
+local MELEE_INV = { [13] = true, [17] = true, [21] = true, [22] = true }
+
+local function hunterStatsLine(link, picked)
+	if Gear.GetPlayer().class ~= "HUNTER" or Gear.UsesFLB(2) then return nil end
+	local info = Gear.GetItemInfo(link)
+	if not (info and info.class == 2 and MELEE_INV[info.inv]) then return nil end
+	if not picked then
+		local rank, cap = ns.Compat.GetSkillRank(Gear.WEAPON_SKILL[info.subclass])
+		if not (rank and cap and rank * 2 < cap) then return nil end
+	end
+	local r, g, b = color("textMuted", 0.5, 0.54, 0.63)
+	return { L["Your ranged damage uses this weapon's stats, not its damage"], nil, r, g, b }
+end
+
+function Gear.TooltipLines(link)
+	local out = {}
+	if not Gear.IsEnabled() then return out end
+	local scored, scoreLine, picked = false, false, false
+	if ns.Get("gear.tooltip") then
+		local left, right, r, g, b, fromWeights = Gear.TooltipLine(link)
+		if left then
+			local lr, lg, lb = color("textDim", 0.69, 0.72, 0.8)
+			out[#out + 1] = { left, right, lr, lg, lb, r, g, b }
+			scored, scoreLine = fromWeights, fromWeights
+		end
+	end
+	if ns.Get("gear.pickTooltip") then
+		local id = Gear.ItemID(link)
+		if id and pickLine(id, out) then scored, picked = true, true end
+	end
+	local why = scoreLine and hunterStatsLine(link, picked)
+	if why then table.insert(out, 2, why) end
+	local note = scored and Gear.ScoredFor()
+	if note then
+		local r, g, b = color("textMuted", 0.5, 0.54, 0.63)
+		out[#out + 1] = { note, nil, r, g, b }
+	end
+	return out
+end
+
+ns.Hooks.ItemLines("Gear", function(tooltip, link, itemID)
+	if type(link) ~= "string" then link = itemID and ("item:" .. itemID) or nil end
+	if not link then return end
+	local H = ns.Hooks
+	for _, l in ipairs(Gear.TooltipLines(link)) do
+		H.AddLine(tooltip, l[1], l[2], l[3], l[4], l[5], l[6], l[7], l[8])
+	end
+end)
+
+end)

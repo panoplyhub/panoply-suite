@@ -1,0 +1,48 @@
+## Interface: 16001
+## Title: PanoplyGuide
+## Notes: Leveling guides for World of Warcraft: Forever.
+## Title-deDE: PanoplyGuide
+## Notes-deDE: Leveling-Guides für World of Warcraft: Forever.
+## Title-esES: PanoplyGuide
+## Notes-esES: Guías para subir de nivel en World of Warcraft: Forever.
+## Title-esMX: PanoplyGuide
+## Notes-esMX: Guías para subir de nivel en World of Warcraft: Forever.
+## Title-frFR: PanoplyGuide
+## Notes-frFR: Guides de montée en niveau pour World of Warcraft: Forever.
+## Title-koKR: PanoplyGuide
+## Notes-koKR: World of Warcraft: Forever 레벨업 가이드.
+## Title-ptBR: PanoplyGuide
+## Notes-ptBR: Guias de evolução para World of Warcraft: Forever.
+## Title-ruRU: PanoplyGuide
+## Notes-ruRU: Гайды по прокачке для World of Warcraft: Forever.
+## Title-zhCN: PanoplyGuide
+## Notes-zhCN: 魔兽世界：Forever 练级指南。
+## Title-zhTW: PanoplyGuide
+## Notes-zhTW: World of Warcraft: Forever 的升級指南。
+## Author: PanoplyGuide
+## X-License: GPL-3.0-only
+## X-Website: https://github.com/panoplyhub/panoply-suite
+## Version: 0.4.2.1
+## Category: PanoplyGuide
+## IconTexture: Interface\AddOns\PanoplySuite\GuideEngine\PanoplyGuide\Media\UI\logo
+## AddonCompartmentFunc: PanoplyGuide_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: PanoplyGuide_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: PanoplyGuide_OnAddonCompartmentLeave
+## OptionalDeps: EllesmereUI, TomTom, OpenMap, ErgoBars, ForeverLevelingBiS
+## SavedVariables: PanoplyGuideDB
+## SavedVariablesPerCharacter: PanoplyGuideCharDB
+
+ClientInfo.lua
+Core\Core.xml
+Theme\Theme.xml
+Nav\Nav.xml
+Quests\Quests.xml
+Gear\Gear.xml
+Maps\Maps.xml
+QoL\QoL.xml
+Lookup\Lookup.xml
+Dungeons\Dungeons.xml
+UI\UI.xml
+Rares\Rares.xml
+Talents\Talents.xml
+Alts\Alts.xml

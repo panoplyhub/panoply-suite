@@ -685,8 +685,8 @@ function ST:ReadyMade(classFile)
   local out = {}
   local S = Panoply.SpecBasic
   local T = self:Trees(classFile)
-  -- WoW Forever (0.9.9.4 hotfix): the trees are WoW Forever's (Blizzard's tables, or the game's own), and the suggested builds are NOT Polestar's (Nov
-  -- 22 2026: "dont use polestars guides at all....use only the ones we grab online ... talent guides that is"). They come from
+  -- WoW Forever (0.9.9.4 hotfix): the trees are WoW Forever's (Blizzard's tables, or the game's own), and the suggested builds are NOT PanoplyGuide's (Nov
+  -- 22 2026: "dont use panoplyguides guides at all....use only the ones we grab online ... talent guides that is"). They come from
   -- Panoply.ForeverBuilds, the builds collected from public guide sites, which is not shipped yet: until it is, a WoW Forever class has no
   -- suggested build and the player plans by hand (ST:NoBuildLine). The Classic Era plans of Specs.lua are written for Classic's trees and
   -- are never offered there; its class-wide trainer lists (S.spells) still sort the trainer (ST:VerdictPlan).
@@ -944,7 +944,7 @@ function ST:OldPlanLine(slot)
   return ("Your plan \"%s\" was made for the old talent trees, before WoW Forever changed them, so it is not used. %s"):format(p.name or p.key, again)
 end
 
--- 0.9.9.4 (no Polestar talent guides): the line shown while a class has no suggested build and no plan is followed; nil otherwise
+-- 0.9.9.4 (no PanoplyGuide talent guides): the line shown while a class has no suggested build and no plan is followed; nil otherwise
 function ST:NoBuildLine(classFile)
   classFile = classFile or self:ClassFile()
   if not classFile or #self:ReadyMade(classFile) > 0 or (classFile == self:ClassFile() and self:Tracked()) then return nil end

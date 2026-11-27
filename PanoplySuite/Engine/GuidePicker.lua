@@ -13,8 +13,8 @@
 --   GuidePicker:Title(id)    -> a guide's name as the player reads it (never the engine's name)
 --   GuidePicker:Following()  -> the partner's name while this character is synced to a partner's guide, or nil
 -- Progress: the engine keeps each guide's place, ticks and skips itself; going back to a guide opens it where it was left.
--- Partner (Engine/PolestarParty.lua): PolestarParty:Following() -> the partner's name while synced, or nil;
---   PolestarParty:EndSync(why) -> ends the sync, says nothing (the one line is printed here).
+-- Partner (Engine/PanoplyGuideParty.lua): PanoplyGuideParty:Following() -> the partner's name while synced, or nil;
+--   PanoplyGuideParty:EndSync(why) -> ends the sync, says nothing (the one line is printed here).
 local ADDON, Panoply = ...
 local C = Panoply.Compat
 local GuidePicker = {}
@@ -22,8 +22,8 @@ Panoply.GuidePicker = GuidePicker
 
 GuidePicker.NOT_AVAILABLE = "Guide not available."
 
-local function PE() return Panoply.PolestarEngine end
--- the engine's own table, as the adapter finds it (Engine/PolestarEngine.lua PS.P)
+local function PE() return Panoply.PanoplyGuideEngine end
+-- the engine's own table, as the adapter finds it (Engine/PanoplyGuideEngine.lua PS.P)
 local function P() local pe = PE() return pe and pe.P and pe.P() or nil end
 
 local function call(fn, ...)
@@ -51,7 +51,7 @@ end
 
 -- A guide's name in Panoply's voice: the engine is never named in what the player reads
 local function voice(s)
-  local V = Panoply.PolestarVoice
+  local V = Panoply.PanoplyGuideVoice
   if type(s) ~= "string" then return nil end
   if V and V.GuideText then s = V.GuideText(s) end
   if V and V.Text then s = V.Text(s) end
@@ -153,9 +153,9 @@ function GuidePicker:List()
   return out
 end
 
--- The partner this character is synced to (Engine/PolestarParty.lua keeps it)
+-- The partner this character is synced to (Engine/PanoplyGuideParty.lua keeps it)
 function GuidePicker:Following()
-  local PP = Panoply.PolestarParty
+  local PP = Panoply.PanoplyGuideParty
   if not (PP and type(PP.Following) == "function") then return nil end
   local name = PP:Following()
   if type(name) == "string" and name ~= "" then return name end
@@ -163,10 +163,10 @@ function GuidePicker:Following()
 end
 
 -- Picking another guide while synced to a partner ends the sync, with one line saying so. `name`: who was followed before the
--- guide was switched (once it is, the partner is on another guide and PolestarParty no longer names them).
+-- guide was switched (once it is, the partner is on another guide and PanoplyGuideParty no longer names them).
 local function endSync(name)
   if not name then return end
-  local PP = Panoply.PolestarParty
+  local PP = Panoply.PanoplyGuideParty
   if PP and type(PP.EndSync) == "function" then PP:EndSync("guide") end
   Panoply:Print(("You picked another guide, so you no longer follow %s's guide."):format(name))
 end
@@ -181,7 +181,7 @@ local function switch(self, id)
   if currentId(E) == id then return true end
   local followed = self:Following()
   if call(E.SetGuide, id) ~= true or currentId(E) ~= id then return false, "That guide could not be opened." end
-  -- "Leveling guide" in the guide source switch comes back to the guide picked here (Engine/PolestarEngine.lua PS:SetSource)
+  -- "Leveling guide" in the guide source switch comes back to the guide picked here (Engine/PanoplyGuideEngine.lua PS:SetSource)
   if Panoply.cdb then Panoply.cdb.psLevelingGuide = id end
   endSync(followed)
   local pe = PE()

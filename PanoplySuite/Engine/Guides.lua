@@ -1,7 +1,7 @@
 -- Panoply Suite: written leveling guides (0.8.0). Own code, GPL-3.0-only (see ../LICENSE).
 --
--- The guide text it follows is Polestar's own WoW Forever leveling route (GPL-3.0-only, https://github.com/fitzforge/polestar),
--- converted by tools/convert_polestar_guides.py into Data/Guides/*.lua. None of Polestar's add-on code, arrow, navigation or
+-- The guide text it follows is PanoplyGuide's own WoW Forever leveling route (GPL-3.0-only, https://github.com/fitzforge/panoplyguide),
+-- converted by Panoply Suite's guide converter into Data/Guides/*.lua. None of PanoplyGuide's add-on code, arrow, navigation or
 -- frames is used: these steps run on Panoply Suite's own step engine (Engine/Steps.lua), arrow and guide window.
 --
 -- Which route a character follows (Panoply.cdb.routeSource, per character; /panoply route):
@@ -11,7 +11,7 @@
 --             area yet" (Engine/NoGuide.lua); where no written guide has a step for them at all (every guide of their route done or
 --             out-levelled; a race with no written route) it is "No guide step here" (G:NoStep).
 --   "guides"  the same written route, held everywhere (new Forever zones too).
---   "planner" Nov 11 2026 ("turn planner off. use polestar."): gone. There is no planner route and no planner fallback
+--   "planner" Nov 11 2026 ("turn planner off. use panoplyguide."): gone. There is no planner route and no planner fallback
 --             (Engine/Planner.lua P:BuildsLevelingRoute). A character who has routeSource = "planner" saved from before follows the
 --             written guides like everyone else; the saved value is left as it is and means nothing. /panoply route planner changes
 --             nothing. (Only the suite's older tests of the planner turn the planner back on, and with it these three old meanings.)
@@ -28,7 +28,7 @@
 -- What a guide step becomes: one Panoply Suite step with one goal per guide goal (accept, turnin, complete, quest objectives,
 -- collect, goto, flight path, fly, hearth, sethome, level, enter, buy), an "only" race/class/faction condition decided once for
 -- the character (a goal or step for another race or class is left out), and a "when" predicate checked live (a step whose
--- predicate fails is hidden, so the engine passes it, as Polestar's own guides intend). Goals the engine cannot see done
+-- predicate fails is hidden, so the engine passes it, as PanoplyGuide's own guides intend). Goals the engine cannot see done
 -- (train, vendor, note, use, abandon, destroy, task, nearest targets) are shown and never hold the step, except a task, which
 -- waits for the player's tick. G.unsupported counts what the data carries that is not acted on.
 local ADDON, Panoply = ...
@@ -38,7 +38,7 @@ Panoply.Guides = G
 
 G.MODES = { auto = true, guides = true, planner = true }
 G.SKYBORNE_IDS = { [95] = true, [96] = true }
-G.GOTO_RADIUS = 8          -- yards: Polestar's own default for a goto
+G.GOTO_RADIUS = 8          -- yards: PanoplyGuide's own default for a goto
 G.MAX_STEPS = 400          -- a guide is at most this many steps (the longest converted guide is far below)
 
 -- the data files call these (Data/Guides/Index.lua, Alliance.lua, Horde.lua)
@@ -174,7 +174,7 @@ function G.Applies(cond, who)
 end
 
 -------------------------------------------------------------------------------
--- `when` predicates, checked on the live state (Polestar's guide format, "Conditions checked during play")
+-- `when` predicates, checked on the live state (PanoplyGuide's guide format, "Conditions checked during play")
 -------------------------------------------------------------------------------
 function G.Money(text)
   if not text then return nil end
@@ -247,7 +247,7 @@ function G.When(pred, s)
     local Dif = Panoply.Difficulty
     return out(Dif ~= nil and Dif.GroupQuests ~= nil and Dif.GroupQuests() == "do")
   elseif word == "dungeon" then
-    return out(false)   -- Polestar's own default: every dungeon run is off until the player picks it
+    return out(false)   -- PanoplyGuide's own default: every dungeon run is off until the player picks it
   elseif word == "zone" then
     return out(s.zone == rest or s.subzone == rest)
   elseif word == "subzone" then
@@ -323,7 +323,7 @@ local function mapFor(guide, zone, s)
   if s.pos and s.pos.map then for _, m in ipairs(list) do if m == s.pos.map then return m end end end
   return list[1]
 end
--- a typed coordinate in Polestar's map frame ("era" by default) as a spot on this client's map
+-- a typed coordinate in PanoplyGuide's map frame ("era" by default) as a spot on this client's map
 -- Classic Era: a coordinate typed in WoW Forever's own map frame ("live") is not used: Forever re-drew some maps, and Era's data
 -- cannot say which. The caller then takes the place from Era's own quest data, as for a goal with no typed coordinate.
 local function spot(guide, g, s)
@@ -413,7 +413,7 @@ function G:Goal(guide, g, who, s, ref)
     if not g.text and q and not questNameKnown(q) then
       local suffix = (v == "accept" and g.lvl) and (" (from level " .. g.lvl .. ")") or ""
       out.retext = function(n) return verb .. quoted(n) .. suffix end
-      -- Nov 13 2026 (Polestar 0.3.7.2 Teldrassil, quest 98403, named nowhere we can read): until the game names it, the line names
+      -- Nov 13 2026 (PanoplyGuide 0.3.7.2 Teldrassil, quest 98403, named nowhere we can read): until the game names it, the line names
       -- the person the guide's own note gives ("Tallonkai Swiftroot: ..." or "Tallonkai Swiftroot, upstairs"), not a number
       local note = type(g.note) == "string" and g.note or ""
       local who, sep = note:match("^([^:,;%(]+)([:,;%(]?)")
@@ -436,7 +436,7 @@ function G:Goal(guide, g, who, s, ref)
     out = { text = verb .. what }
     if g.quest then
       out.type, out.questID = "objective", g.quest
-      -- Nov 12 2026 (Felix's Box, Chest and Bucket of Bolts): Polestar often names the item or creature and not the objective's
+      -- Nov 12 2026 (Felix's Box, Chest and Bucket of Bolts): PanoplyGuide often names the item or creature and not the objective's
       -- number. Such a goal is judged by its own item or creature (Engine/Steps.lua Goals.eval.objective), never by objective 1,
       -- which made every unnumbered part of a quest tick on the first objective alone.
       if g.obj then out.objIndex = g.obj
@@ -450,7 +450,7 @@ function G:Goal(guide, g, who, s, ref)
       if v == "use" then out.optional = true end
     elseif v == "talk" or v == "interact" then out.type = "talk"
     else out.type, out.optional = "confirm", true end
-    -- where: Polestar's own spot first; else, for a numbered goal, that objective's area in our data; for an unnumbered one, the
+    -- where: PanoplyGuide's own spot first; else, for a numbered goal, that objective's area in our data; for an unnumbered one, the
     -- spots of its own item or creature (never objective 1's area, which is another part of the quest)
     local QD = Panoply.QuestData
     local own = not g.obj and g.quest and QD:Available() and (g.id or g.item)
@@ -463,7 +463,7 @@ function G:Goal(guide, g, who, s, ref)
       out.retextQuest = g.quest
     end
     -- Nov 11 zone audit: an item our data does not name (a quest-given totem, an item WoW Forever added) is named by the client once
-    -- it knows it (in the bags, or cached): StepText asks again when it shows the goal. Polestar's collect / use id is always an item.
+    -- it knows it (in the bags, or cached): StepText asks again when it shows the goal. PanoplyGuide's collect / use id is always an item.
     if not name and kind == "item" and (g.id or g.item) then out.itemRetext = itemRetext(g.id or g.item, function(n) return verb .. n end) end
   elseif v == "collect" or v == "buy" then
     local id = g.id or g.item
@@ -503,7 +503,7 @@ function G:Goal(guide, g, who, s, ref)
     if frac and frac ~= "" and Panoply.Planner and Panoply.Planner.XPToLevel then xp = math.floor(Panoply.Planner.XPToLevel(lvl) * tonumber("0." .. frac)) end
     out = { type = "level", level = lvl, xp = xp, text = "Reach level " .. lvl .. (xp > 0 and (" (" .. math.floor(tonumber("0." .. frac) * 100 + 0.5) .. "%)") or "") }
   elseif v == "die" then
-    return nil   -- a deathskip: Polestar's "Use deathskips" is off by default, and then the goal does not apply
+    return nil   -- a deathskip: PanoplyGuide's "Use deathskips" is off by default, and then the goal does not apply
   elseif v == "task" then
     out = { type = "confirm", optional = g.optional, text = g.text or "Do this, then tick it" }
   elseif v == "note" then
@@ -531,7 +531,7 @@ function G:Goal(guide, g, who, s, ref)
   return out
 end
 
--- the flight path goal: Polestar names the flight point ("Stormwind, Elwynn") or its part before the comma ("Stormwind")
+-- the flight path goal: PanoplyGuide names the flight point ("Stormwind, Elwynn") or its part before the comma ("Stormwind")
 Panoply.Goals.eval.guideFlight = function(g)
   local known = Panoply.cdb and Panoply.cdb.knownTaxi
   if not (known and g.node) then return Panoply.Goals.TODO end
@@ -774,7 +774,7 @@ function G:Pick(s, who)
   self:Load()
   if mode == "auto" and self:Uncovered(chain, s) then return nil end
   local level = s.level or 1
-  -- Nov 13 2026 (Polestar 0.3.7.2, Alliance 30-40: Stranglethorn Vale, Desolace, Stranglethorn Vale again): quests a later guide
+  -- Nov 13 2026 (PanoplyGuide 0.3.7.2, Alliance 30-40: Stranglethorn Vale, Desolace, Stranglethorn Vale again): quests a later guide
   -- shares with this guide or any guide before it (a second visit to the same zone) are no sign of having moved on; only quests of
   -- its own count. Before, the first Stranglethorn visit's quests made the second visit "taken", and Desolace between them was skipped.
   local function questsUpTo(i)
@@ -922,7 +922,7 @@ function G:NotePlace()
 end
 Panoply:Listen("STEP_CHANGED", function() G:NotePlace() end)
 
--- Nov 11 2026 ("turn planner off. use polestar. when a user reports an issue on a missing quest then we incorporate it."): no
+-- Nov 11 2026 ("turn planner off. use panoplyguide. when a user reports an issue on a missing quest then we incorporate it."): no
 -- written guide has a step for this character here (every guide of their route is done or out-levelled; a race with no written route).
 -- There is no planner to fill in: the guide window says so, and how to tell us about a missing quest. The saved route is left as it
 -- is. Returns false and the line (Core/Bootstrap.lua AfterReplan prints it when the player asked).
@@ -955,7 +955,7 @@ G.PLANNER_OFF_LINE = "The planner is off: the written leveling guides are the on
 function G:Status()
   if not self:HasData() then return "The written leveling guides are not loaded." end
   -- 0.9.7 (Nov 18 2026): /panoply route on a character whose guide comes from the guide engine, or has no guide at all
-  local PS = Panoply.PolestarEngine
+  local PS = Panoply.PanoplyGuideEngine
   if PS and PS.on == true then return "Route: the leveling guide for this character, picked up from where this character is." end
   if Panoply:GuideUnavailable() then return Panoply.GUIDE_UNAVAILABLE_LINE end
   if not self:Available() then return "The written leveling guides are for WoW Forever." end

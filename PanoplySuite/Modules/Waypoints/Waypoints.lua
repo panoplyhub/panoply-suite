@@ -422,7 +422,7 @@ function W:Toggle()
 end
 
 -- Whether any add-on other than this module has a slash command spelled /way (the globals SLASH_<NAME><n>).
--- The same technique as Polestar's own wayTaken (addon/Polestar/Nav/Journey.lua); Polestar's /way counts as taken too.
+-- The same technique as PanoplyGuide's own wayTaken (addon/PanoplyGuide/Nav/Journey.lua); PanoplyGuide's /way counts as taken too.
 function W.WayTaken()
   for key, value in pairs(_G) do
     if type(key) == "string" and type(value) == "string" and key:find("^SLASH_") and not key:find("^SLASH_HEARTHPATHWAY%d")

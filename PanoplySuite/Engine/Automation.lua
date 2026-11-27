@@ -22,13 +22,13 @@ function A:PartnerHeld()
 end
 
 -- 0.9.7 (partner leveling, the automation-hold fix): the guide's party sync holds a quest's hand-in while a party member still needs
--- the quest; our auto turn-in did not ask and handed it in anyway. Now it asks (Engine/PolestarParty.lua, the engine's
+-- the quest; our auto turn-in did not ask and handed it in anyway. Now it asks (Engine/PanoplyGuideParty.lua, the engine's
 -- Party.HoldsQuest) and leaves that quest alone, saying so once per quest for as long as the wait lasts. The player can still hand
 -- it in by hand, or press "Go on without them".
 A.waitSaid = {}
 function A:PartnerWaits(questID, title)
   questID = tonumber(questID)
-  local PP = Panoply.PolestarParty
+  local PP = Panoply.PanoplyGuideParty
   if not (questID and PP and PP.Waiting) then return false end
   local ok, waits, names = pcall(PP.Waiting, PP, questID)
   if not ok then Panoply:Debug("automation", "partner wait", waits) return false end
@@ -42,10 +42,10 @@ function A:PartnerWaits(questID, title)
   return true
 end
 
--- Is the quest part of the route? (WoW Forever with Polestar's engine: Polestar's guide says so)
+-- Is the quest part of the route? (WoW Forever with PanoplyGuide's engine: PanoplyGuide's guide says so)
 local function inPlan(questID)
   if questID == nil then return false end
-  local PE = Panoply.PolestarEngine
+  local PE = Panoply.PanoplyGuideEngine
   if PE and PE:Active() then return PE:WantsQuest(questID) end
   return Panoply.Planner.planSet ~= nil and Panoply.Planner.planSet[questID] == true
 end

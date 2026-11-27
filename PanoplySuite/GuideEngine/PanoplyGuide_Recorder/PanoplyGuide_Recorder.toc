@@ -1,0 +1,51 @@
+## Interface: 16001
+## Title: PanoplyGuide Recorder
+## Notes: Records quests, routes and world data while you play, for authoring PanoplyGuide guides. /psrec
+## Title-deDE: PanoplyGuide Recorder
+## Notes-deDE: Zeichnet beim Spielen Quests, Wege und Weltdaten auf, um PanoplyGuide-Guides zu schreiben. /psrec
+## Title-esES: PanoplyGuide Recorder
+## Notes-esES: Graba misiones, rutas y datos del mundo mientras juegas, para crear guías de PanoplyGuide. /psrec
+## Title-esMX: PanoplyGuide Recorder
+## Notes-esMX: Graba misiones, rutas y datos del mundo mientras juegas, para crear guías de PanoplyGuide. /psrec
+## Title-frFR: PanoplyGuide : enregistreur
+## Notes-frFR: Enregistre les quêtes, les trajets et les données du monde pendant que vous jouez, pour écrire des guides PanoplyGuide. /psrec
+## Title-koKR: PanoplyGuide 기록기
+## Notes-koKR: 플레이하는 동안 퀘스트, 경로, 월드 데이터를 기록해 PanoplyGuide 가이드 작성에 씁니다. /psrec
+## Title-ptBR: PanoplyGuide: gravador
+## Notes-ptBR: Grava missões, rotas e dados do mundo enquanto você joga, para criar guias do PanoplyGuide. /psrec
+## Title-ruRU: PanoplyGuide: запись
+## Notes-ruRU: Записывает задания, маршруты и данные мира во время игры, для создания гайдов PanoplyGuide. /psrec
+## Title-zhCN: PanoplyGuide 记录器
+## Notes-zhCN: 在游戏时记录任务、路线和世界数据，用于编写 PanoplyGuide 指南。/psrec
+## Title-zhTW: PanoplyGuide 記錄器
+## Notes-zhTW: 在遊戲時記錄任務、路線與世界資料，用於撰寫 PanoplyGuide 指南。/psrec
+## Author: PanoplyGuide
+## X-License: GPL-3.0-only
+## Version: 0.4.2.1
+## Category: PanoplyGuide
+## Group: PanoplyGuide
+## SavedVariables: PanoplyGuideRecorderDB
+## SavedVariablesPerCharacter: PanoplyGuideRecorderCharDB
+## OptionalDeps: PanoplyGuide
+
+Ack.lua
+Recorder.lua
+Locales\deDE.lua
+Locales\esMX.lua
+Locales\frFR.lua
+Locales\esES.lua
+Locales\ptBR.lua
+Locales\ruRU.lua
+Locales\koKR.lua
+Locales\zhCN.lua
+Locales\zhTW.lua
+Explore.lua
+Quests.lua
+World.lua
+Finds.lua
+Progress.lua
+Route.lua
+Trail.lua
+Spots.lua
+Panel.lua
+Commands.lua

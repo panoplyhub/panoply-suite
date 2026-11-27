@@ -25,11 +25,16 @@ local SP, TH = Skin.SP, Skin.TextHeight
 
 WN.NOTES = {
   { version = "0.7.3.6", lines = {} },       -- released: nothing to add
+  { version = "0.9.9.6", lines = {} },       -- Nov 26 2026: Hub remembers your auction house, shows only your factions' prices and the items' own icons; installers say /panoply; nothing to add (any text is approved first)
+  -- Nov 25 2026: Hub prices by faction; guide engine renamed; /ps dropped. The line is our approved text ("Use that line")
+  { version = "0.9.9.5", lines = {
+    { "/ps is gone: type /panoply to open Panoply Suite (another guide add-on uses /ps).", "home", "Show me", general = true },
+  } },
   { version = "0.9.9.4", lines = {} },       -- Nov 23 2026: WoW Forever talent trees from Blizzard's data; public builds in every place; profession icons; nothing to add (any text is approved first)
   { version = "0.9.9.3", lines = {} },       -- Nov 22 2026: Hub: carried-over Horde house removed; old 0.9.9.1 pick no longer used; nothing to add (any text is approved first)
   { version = "0.9.9.2", lines = {} },       -- Nov 22 2026: your auction house is found automatically; nothing to add (any text is approved first)
-  { version = "0.9.9.1", lines = {} },       -- Nov 21 2026: Polestar 0.4.2.1 (walking arrow fixed, guide fixes); nothing to add (any text is approved first)
-  { version = "0.9.9", lines = {} },         -- Nov 21 2026: Polestar 0.4.2 (the guide engine); nothing to add (any text is approved first)
+  { version = "0.9.9.1", lines = {} },       -- Nov 21 2026: PanoplyGuide 0.4.2.1 (walking arrow fixed, guide fixes); nothing to add (any text is approved first)
+  { version = "0.9.9", lines = {} },         -- Nov 21 2026: PanoplyGuide 0.4.2 (the guide engine); nothing to add (any text is approved first)
   { version = "0.9.8", lines = {} },         -- Nov 21 2026: some game data was taken out; nothing to add (we approves any text first)
   -- 0.9.7 (Nov 18 2026, WoW Forever only): Classic out of the product, the levelling styles replaced by one Group quests setting,
   -- partner levelling with the class-quest hold, the guide picker. Shown from the build whose version is 0.9.7 (a note newer than
@@ -67,18 +72,18 @@ WN.NOTES = {
     { "Help is new: search it, read tips for every page, find any command, and report a problem in one place.", "help", "Show me" },
     { "Setup asks how much you have played, so the Class page is written for you.", "class", "Show me", general = true },
   } },
-  -- 0.9.2 (Nov 13 2026): the guides on Polestar 0.3.7.2 and guide fixes. No new text was written for it (new text needs our OK
+  -- 0.9.2 (Nov 13 2026): the guides on PanoplyGuide 0.3.7.2 and guide fixes. No new text was written for it (new text needs our OK
   -- first), so the note has no lines and shows nothing
   { version = "0.9.2", lines = {} },
-  -- 0.9.3 (Nov 14 2026): the next list after 0.9.2 (talent sync, menus, saved map spots, bag window, window sizes) and Polestar's
+  -- 0.9.3 (Nov 14 2026): the next list after 0.9.2 (talent sync, menus, saved map spots, bag window, window sizes) and PanoplyGuide's
   -- engine on WoW Forever. No new text was written for it (new text needs our OK first), so the note has no lines and shows nothing
   { version = "0.9.3", lines = {} },
   -- 0.9.4 (Nov 14 2026): the next list after 0.9.3 (profession data, hunter pets, class pages, shield logo, About, menu icons). No new text was
   -- written for it (new text needs our OK first), so the note has no lines and shows nothing
   { version = "0.9.4", lines = {} },
   { version = "0.9.1", lines = {
-    -- the planner off (Polestar's written guides are the only route), the guide's place kept across login, Level together in step
-    { "The planner is turned off. The written leveling guide, converted from Polestar's, is now the only route.", "guide", "Open Guide" },
+    -- the planner off (PanoplyGuide's written guides are the only route), the guide's place kept across login, Level together in step
+    { "The planner is turned off. The written leveling guide is now the only route.", "guide", "Open Guide" },
     { "The guide keeps its place when you log out and back in.", "guide", "Open Guide" , general = true },
     { "Level together follows the party leader's route while the two of you are in step, and keeps its own route when you are not.", "partner", "Open Level together" },
     -- long lists the same way everywhere
@@ -117,10 +122,10 @@ WN.NOTES = {
     -- the rename: Hearthpath is now Panoply Suite (Core/Migrate.lua copies the old saved data across once)
     { "Hearthpath is now called Panoply Suite. Type /panoply to open it, or /ps for short (/ps noguide, /ps help).", "home", "Open Home" },
     { "Your settings and recorded guides came across on their own. Nothing was wiped.", "help", "Open Help" , general = true },
-    -- the written leveling guides (Engine/Guides.lua, Data/Guides/: converted from Polestar's own guides)
+    -- the written leveling guides (Engine/Guides.lua, Data/Guides/: converted from PanoplyGuide's own guides)
     { "WoW Forever: written leveling guides from every race's start to 60. A Skyborne gets the Zephras Isle guide by itself; /ps route guides follows them all the way.", "guide", "Open Guide" },
     -- the licence (LICENSE, NOTICE.md)
-    { "Panoply Suite is now free software under the GNU GPL version 3. The leveling guides are converted from Polestar's own guides (GPL-3.0); credits are in NOTICE.md.", "help", "Open Help" , general = true },
+    { "Panoply Suite is now free software under the GNU GPL version 3. Credits are in NOTICE.md.", "help", "Open Help" , general = true },
   } },
   { version = "0.7.4.1", lines = {
     -- no guide yet in new areas (Engine/NoGuide.lua)

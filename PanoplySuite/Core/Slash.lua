@@ -1,4 +1,4 @@
--- Panoply Suite slash commands: /panoply, and /ps for short (0.8.0; the old /hp and /hearthpath still work, unadvertised)
+-- Panoply Suite slash commands: /panoply (/ps, its short form from 0.8.0, was dropped in 0.9.9.5; the old /hp and /hearthpath still work, unadvertised)
 local ADDON, Panoply = ...
 local C, U = Panoply.Compat, Panoply.Util
 
@@ -7,13 +7,12 @@ local C, U = Panoply.Compat, Panoply.Util
 -- are also on the Help page's list, grouped, with their other names. order keeps /panoply help in this order, before the modules' lines.
 local Help = Panoply.Help
 local CMDS = {
-  { key = "open", usage = "/panoply", desc = "Open Panoply Suite (every page, and every setting behind its gear).", group = "open", aliases = { "/ps" },
+  { key = "open", usage = "/panoply", desc = "Open Panoply Suite (every page, and every setting behind its gear).", group = "open",
     chat = "/panoply - open Panoply Suite (the Guide, Muster (your characters and bags), professions, Profiles and every setting behind each page's gear)" },
-  { key = "ps", page = false, chat = "/ps - the short form: every command below works with /ps too (/ps noguide is /panoply noguide)" },
   { key = "settings", usage = "/panoply settings arrow", desc = "Open Panoply Suite with the All settings box ready, and the word typed in it.", group = "open",
     chat = "/panoply settings [word] - open Panoply Suite with the All settings box ready; a word types it in (/panoply settings arrow)" },
   { key = "guide", usage = "/panoply guide", desc = "Show or hide the guide window.", group = "guide",
-    chat = "/panoply guide (or /ps guide) - show or hide the guide window" },
+    chat = "/panoply guide - show or hide the guide window" },
   { key = "guidewhich", page = false, chat = "/panoply guide leveling | professions [name] | both - which guide the step window follows" },
   { key = "route", page = false, chat = "/panoply route - say which leveling route this character follows: the written leveling guides for your race and faction, from where this character is;  route guides - keep the written guide in new zones it does not go to as well;  route auto - back to the default" },
   { key = "switch", usage = "/panoply switch", desc = "Flip the guide between levelling and your profession.", group = "guide",
@@ -34,7 +33,7 @@ local CMDS = {
   { key = "proftracker", page = false, chat = "/panoply prof tracker - show or hide the profession tracker" },
   { key = "price", page = false, chat = "/panoply price \"Item Name\" <copper> - set your own Auction House price" },
   { key = "sync", page = false, chat = "/panoply sync - show partner status" },
-  { key = "source", page = false, chat = "/panoply source leveling | added - WoW Forever: which guide to follow" },   -- Nov 14 2026 (step 21): /panoply polestar (engine and credits) still works but is not advertised
+  { key = "source", page = false, chat = "/panoply source leveling | added - WoW Forever: which guide to follow" },   -- Nov 14 2026 (step 21): /panoply panoplyguide (engine and credits) still works but is not advertised
   { key = "arrow", usage = "/panoply arrow lock", desc = "Lock the arrow in place (/panoply arrow unlock, /panoply arrow reset).", group = "guide",
     chat = "/panoply arrow - toggle the arrow;  /panoply arrow lock | unlock | reset" },
   { key = "way", group = "waypoints", module = "waypoints",
@@ -134,12 +133,12 @@ function Panoply:Slash(msg)
     local Fv = Panoply.Map and Panoply.Map.Favorites
     if not Fv then Panoply:Print("Map favorites are not in this build.") return end
     Fv:Slash((msg or ""):gsub("^%s*%S+%s*", ""))
-  elseif cmd == "polestar" then
-    Panoply:Print(Panoply.PolestarEngine and Panoply.PolestarEngine:Status() or "Not in this build.")
-    if Panoply.PolestarEngine and Panoply.PolestarEngine:Present() then Panoply:Print(Panoply.PolestarEngine:Credits()) end
+  elseif cmd == "engine" then
+    Panoply:Print(Panoply.PanoplyGuideEngine and Panoply.PanoplyGuideEngine:Status() or "Not in this build.")
+    if Panoply.PanoplyGuideEngine and Panoply.PanoplyGuideEngine:Present() then Panoply:Print(Panoply.PanoplyGuideEngine:Credits()) end
   elseif cmd == "source" then
-    -- Nov 2026 (step 7): the guide source switch (Engine/PolestarEngine.lua), WoW Forever
-    local PE = Panoply.PolestarEngine
+    -- Nov 2026 (step 7): the guide source switch (Engine/PanoplyGuideEngine.lua), WoW Forever
+    local PE = Panoply.PanoplyGuideEngine
     local v = (args[2] or ""):lower()
     if not (PE and PE:Active()) then Panoply:Print(PE and PE:Status() or "Not in this build.")
     elseif v == "leveling" or v == "levelling" or v == "added" then
@@ -309,10 +308,11 @@ function Panoply:Slash(msg)
   end
 end
 
--- /panoply is the command and /ps its short form (0.8.0, "rename every short slash command from hp to ps"); /hp and /hearthpath (the
+-- /panoply is the command. /ps (its short form from 0.8.0) was dropped in 0.9.9.5 ("Drop /ps from Panoply"): it is the
+-- original guide engine add-on's own command, and the two can be installed together. The numbers run 1, 2, 3 with no gap (the game stops at the
+-- first missing one). /hp and /hearthpath (the
 -- old names) keep working and are not shown anywhere. The id stays HEARTHPATH: it is internal, and changing it would gain nothing.
 _G.SLASH_HEARTHPATH1 = "/panoply"
-_G.SLASH_HEARTHPATH2 = "/ps"
-_G.SLASH_HEARTHPATH3 = "/hp"
-_G.SLASH_HEARTHPATH4 = "/hearthpath"
+_G.SLASH_HEARTHPATH2 = "/hp"
+_G.SLASH_HEARTHPATH3 = "/hearthpath"
 if _G.SlashCmdList then _G.SlashCmdList.HEARTHPATH = function(msg) Panoply:Slash(msg or "") end end

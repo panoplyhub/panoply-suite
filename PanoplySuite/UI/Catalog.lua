@@ -230,7 +230,7 @@ Cat.WORDS = {
   autoTurnIn = "quest hand in automatic complete",
   groupQuests = "elite dungeon instance group party ask include leave skip",
   questRecorder = "forever record save new zone skyborne",
-  guideSource = "forever guide source leveling added polestar switch",
+  guideSource = "forever guide source leveling added switch",
   partyQuestChat = "forever party chat announce tell say group objectives quest progress ready hand in loot",
   questRecorderNotice = "forever record save new zone skyborne chat",
   profiles = "save load switch character account share",
@@ -365,19 +365,19 @@ Cat.PAGES = {
     sections = {
       -- 0.9.7 (Nov 18 2026): the levelling styles are gone; Group quests has their row (its words are UI/Settings.lua's)
       { key = "mode", title = "Group quests", rows = { R("groupQuests", "Group quests") } },
-      -- Nov 11 2026 ("turn planner off. use polestar."): the written guides are the only leveling route, so the Leveling route row
+      -- Nov 11 2026 ("turn planner off. use panoplyguide."): the written guides are the only leveling route, so the Leveling route row
       -- (Written guides / Planner (fallback)) and Fix the route by itself (the planner re-planning by itself) are off this page. Their
       -- saved keys (routeSource, autoReplan) are kept as they are and change nothing.
       { key = "route", title = "Your route", rows = {
           R("autoExtendPlan", "Keep planning"),
           R("guideRouteSteps", "Steps in the route list"),
           R("dropOnReplan", "Offer to drop unused quests after Replan") } },
-      -- Nov 2026 (step 7): on WoW Forever the guide is Polestar's; this is the switch between its leveling guide and an added guide
-      { key = "source", title = "Guide source (WoW Forever)", exists = function() return Panoply.PolestarEngine ~= nil and Panoply.PolestarEngine:Present() end, rows = {
+      -- Nov 2026 (step 7): on WoW Forever the guide is PanoplyGuide's; this is the switch between its leveling guide and an added guide
+      { key = "source", title = "Guide source (WoW Forever)", exists = function() return Panoply.PanoplyGuideEngine ~= nil and Panoply.PanoplyGuideEngine:Present() end, rows = {
           R("guideSource", "Guide source"),
-          readout("info:polestar", function() return Panoply.PolestarEngine:Status() .. "\n" .. Panoply.PolestarEngine:Credits() end) } },
-      -- 0.9.4 (step 21): the party chat lines of the guide engine (WoW Forever): off unless turned on here (Engine/PolestarVoice.lua)
-      { key = "partychat", title = "Party chat", exists = function() return Panoply.PolestarEngine ~= nil and Panoply.PolestarEngine:Present() end, rows = {
+          readout("info:guideengine", function() return Panoply.PanoplyGuideEngine:Status() .. "\n" .. Panoply.PanoplyGuideEngine:Credits() end) } },
+      -- 0.9.4 (step 21): the party chat lines of the guide engine (WoW Forever): off unless turned on here (Engine/PanoplyGuideVoice.lua)
+      { key = "partychat", title = "Party chat", exists = function() return Panoply.PanoplyGuideEngine ~= nil and Panoply.PanoplyGuideEngine:Present() end, rows = {
           R("partyQuestChat", "Tell my party about my quest progress") } },
       { key = "fastest", title = "Fastest way there", rows = {
           R("routeFlights", "Flight paths you know"), R("autoFly", "Pick the flight for me"), R("routeHearth", "Your hearthstone"),

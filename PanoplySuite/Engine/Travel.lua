@@ -160,8 +160,8 @@ function Travel:Evaluate(reason)
   local E = Panoply.Engine
   if not E then return end
   if Panoply:PlayAlong() then self:Show(nil) return end   -- 0.7.1: no travel steps without the guide
-  -- WoW Forever with Polestar's engine: its travel step comes from Polestar's own plan (PolestarEngine:SyncTravel)
-  if Panoply.PolestarEngine and Panoply.PolestarEngine:Active() then return end
+  -- WoW Forever with PanoplyGuide's engine: its travel step comes from PanoplyGuide's own plan (PanoplyGuideEngine:SyncTravel)
+  if Panoply.PanoplyGuideEngine and Panoply.PanoplyGuideEngine:Active() then return end
   local idx = E.index
   local want
   if opt("routeSteps", true) and not E.detour and E.steps[idx] and not C.OnTaxi() and Panoply.Route then
@@ -206,7 +206,7 @@ function Travel:Dismiss(why)
   local E = Panoply.Engine
   local s = E and E.travel
   if not s then return end
-  if s.ps then Panoply.PolestarEngine:SkipLeg() return end   -- Polestar's leg: Polestar leaves it out or moves on
+  if s.ps then Panoply.PanoplyGuideEngine:SkipLeg() return end   -- PanoplyGuide's leg: PanoplyGuide leaves it out or moves on
   self.dismissed[s.key] = true
   self:Show(nil)
 end
@@ -226,7 +226,7 @@ function Travel:Tick(dt)
   local E = Panoply.Engine
   local s = E and E.travel
   if not s then return end
-  if s.ps then return end   -- Polestar's travel step: Polestar sees the boarding and the arrival itself
+  if s.ps then return end   -- PanoplyGuide's travel step: PanoplyGuide sees the boarding and the arrival itself
   if s.guideIndex ~= E.index or E.detour then self:Show(nil) return end
   local State = Panoply.State
   for _, g in ipairs(s.goals) do g.status = Panoply.Goals.Status(g, State) end

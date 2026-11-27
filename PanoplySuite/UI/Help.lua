@@ -130,33 +130,22 @@ function Help.Automation()
   return list
 end
 
--- Nov 2026: the About block, at the end of Get started: the version (from the TOC, never typed), the licence, who the guides and
--- routing come from, what it was built with, and where the full credits are. A game window cannot open a web link, so the address is a
+-- Nov 2026: the About block, at the end of Get started: the version (from the TOC, never typed), the licence, where the source
+-- code is, and where the full credits are (0.9.9.5: the credits themselves are in NOTICE.md and on the listing, not here). A game window cannot open a web link, so the address is a
 -- selectable box (the same read-only copy pattern as UI/ReportCopy.lua): select it, press Ctrl+C (Cmd+C on a Mac).
-Help.POLESTAR_URL = "github.com/fitzforge/polestar"
+Help.SOURCE_URL = "github.com/panoplyhub/panoply-suite"
 function Help.About()
   return {
     title = "About Panoply Suite",
     version = "Version " .. Help.Version(),
     lines = {
       "Panoply Suite is free and open source, under the GNU GPL v3.",
-      "Guides and routing come from Polestar by Fitz (GPL-3.0). Select the address below and press Ctrl+C (Cmd+C on a Mac) to copy it.",
+      "Its source code is at the address below. Select it and press Ctrl+C (Cmd+C on a Mac) to copy it.",
       "Every credit and licence is written out in NOTICE.md, in the Panoply Suite add-on folder.",
     },
     addressAfter = 2,            -- the address box sits under this line
-    address = Help.POLESTAR_URL,
+    address = Help.SOURCE_URL,
   }
-end
-
--- 0.9.7 (our words, approved Nov 2026): one line in the About block, under the address, only while the player's own Polestar is
--- the one running and the copy inside Panoply Suite stayed off (Core/Bundle.lua: off == "own"). Nothing when the copy inside is
--- running, when it is off for another reason, or while playing along (no guide engine is in use then).
-Help.OWN_POLESTAR = "You have Polestar installed separately; Panoply is using that copy."
-function Help.OwnPolestarLine()
-  local B = _G.PanoplySuiteBundle
-  if type(B) ~= "table" or B.off ~= "own" then return nil end
-  if Panoply.PlayAlong and Panoply:PlayAlong() then return nil end
-  return Help.OWN_POLESTAR
 end
 
 -- all of the About text as one string (the tests read it)
@@ -394,13 +383,10 @@ Menu:RegisterTab("Help", function(p)
   if abox.SetTextInsets then abox:SetTextInsets(10, 8, 0, 0) end
   -- read-only: what is typed is put back; clicking into it selects the whole address, ready for Ctrl+C
   abox:SetScript("OnTextChanged", function(self, user)
-    if user and self:GetText() ~= Help.POLESTAR_URL then self:SetText(Help.POLESTAR_URL) end
+    if user and self:GetText() ~= Help.SOURCE_URL then self:SetText(Help.SOURCE_URL) end
   end)
   abox:HookScript("OnEditFocusGained", function(self) if self.HighlightText then self:HighlightText() end end)
   ab.box = abox
-  -- the "own Polestar" line: made here, at load, and shown or hidden when the page is drawn (Help.OwnPolestarLine)
-  ab.own = Skin.Ink(ab, 12, Skin.colors.inkSoft)
-  ab.own:Hide()
   p.about = ab
 
   -- TIPS BY PAGE
@@ -537,7 +523,6 @@ Menu:RegisterTab("Help", function(p)
         ab.box:ClearAllPoints(); ab.box:SetPoint("TOPLEFT", ab, "TOPLEFT", 0, ay)
         ab.box:SetSize(min(w, 300), 28)
         ay = ay - 28 - SP.m
-        if ab.own:IsShown() then put(ab.own, SP.m) end
       end
     end
     ab:SetHeight(max(1, -ay))
@@ -679,9 +664,6 @@ end, function(p)
   p.about.version:SetText(about.version)
   for i, l in ipairs(about.lines) do p.about.lines[i]:SetText(l) end
   p.about.box:SetText(about.address)
-  local own = Help.OwnPolestarLine()
-  p.about.own:SetText(own or "")
-  if own then p.about.own:Show() else p.about.own:Hide() end
   -- Tips by page (from the help registry, Everywhere first, in nav order)
   p.entries = Help:Entries()
   local present = {}

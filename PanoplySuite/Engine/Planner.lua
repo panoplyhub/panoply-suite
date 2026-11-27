@@ -1975,7 +1975,7 @@ function P:CheckReplan(event)
   return self:ReplanReason(ctx)
 end
 
--- Nov 11 2026: "turn planner off. use polestar. when a user reports an issue on a missing quest then we incorporate it." The
+-- Nov 11 2026: "turn planner off. use panoplyguide. when a user reports an issue on a missing quest then we incorporate it." The
 -- written leveling guides (Engine/Guides.lua) are the only leveling route, on WoW Forever and on Classic Era: this planner never builds
 -- one, by itself, after a setting or after a slash command, and an old saved routeSource = "planner" changes nothing. Where no written
 -- guide has a step for the character the guide says so (Guides:NoStep) and the player can report the missing quest (/panoply report).

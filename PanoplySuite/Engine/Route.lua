@@ -55,13 +55,13 @@ Route.clock = clock
 -------------------------------------------------------------------------------
 -- Data
 -------------------------------------------------------------------------------
--- WoW Forever with Polestar's engine (Engine/PolestarEngine.lua): the route is Polestar's, so our route data is not read and
+-- WoW Forever with PanoplyGuide's engine (Engine/PanoplyGuideEngine.lua): the route is PanoplyGuide's, so our route data is not read and
 -- (it is load-on-demand) never loaded; our own router does not plan.
-local function polestar() local PE = Panoply.PolestarEngine return PE ~= nil and PE:Active() end
-Route.Polestar = polestar
+local function panoplyguide() local PE = Panoply.PanoplyGuideEngine return PE ~= nil and PE:Active() end
+Route.PanoplyGuide = panoplyguide
 
 function Route:Data()
-  if polestar() then return nil end
+  if panoplyguide() then return nil end
   local RD = rawget(_G, "PanoplySuiteRouteData")
   if not (RD and RD.flavor) and not self.loadTried then
     self.loadTried = true
@@ -618,7 +618,7 @@ function Route:HandTrip()
 end
 
 function Route:Enabled()
-  if polestar() then return opt("routeEnabled") and not Panoply:PlayAlong() end
+  if panoplyguide() then return opt("routeEnabled") and not Panoply:PlayAlong() end
   if not (opt("routeEnabled") and self:Available()) or Panoply:PlayAlong() then return false end
   if Panoply:NoGuideHere() then return self:HandPicked() ~= nil end
   return true
@@ -658,7 +658,7 @@ end
 Route.VALID_YD = 10
 function Route:Valid(r)
   r = r or self.current
-  if r and r.ps then return polestar() end   -- Polestar's route is for Polestar's own target, always
+  if r and r.ps then return panoplyguide() end   -- PanoplyGuide's route is for PanoplyGuide's own target, always
   local t = r and (r.target or r.to)
   if not (t and t.map) then return false end
   local m, x, y = self:WantedTarget()
@@ -674,7 +674,7 @@ end
 -- running for the old target is ignored when it finishes (the generation no longer matches).
 function Route:Invalidate(reason)
   if Panoply:PlayAlong() then return end
-  if polestar() then return end
+  if panoplyguide() then return end
   self.gen = (self.gen or 0) + 1
   local had = self.current ~= nil
   self.current = nil
@@ -686,7 +686,7 @@ end
 function Route:Replan(reason)
   if Panoply:PlayAlong() then return end   -- 0.7.1: no route planning, no route events
   self.lastReason = reason
-  if polestar() then Panoply.PolestarEngine:SyncRoute(reason) return end   -- Polestar plans; we take its route over
+  if panoplyguide() then Panoply.PanoplyGuideEngine:SyncRoute(reason) return end   -- PanoplyGuide plans; we take its route over
   if not (Panoply.Engine and Panoply.Engine.Target) then return end
   if C.InCombat and C.InCombat() then
     self.pending = reason
@@ -752,7 +752,7 @@ end
 function Route:StepETA()
   local r = self.current
   if not (r and r.total and self:Valid(r)) then return nil end
-  if r.ps then return r.total end   -- Polestar's plan is timed by Polestar
+  if r.ps then return r.total end   -- PanoplyGuide's plan is timed by PanoplyGuide
   local d, walk = self:StraightWalk()
   if d and d < self.SANITY_YD and r.total > walk * 3 + 20 then
     self.sanityFixes = (self.sanityFixes or 0) + 1
@@ -815,7 +815,7 @@ end
 -- Called once a second: learn speed, watch the bind/hearth state and the off-trail timer.
 function Route:Tick(dt)
   if Panoply:PlayAlong() then return end
-  if polestar() then return end
+  if panoplyguide() then return end
   self:LearnSpeed()
   if self.waitPos and C.GetPlayerPos() then local r = self.waitPos self.waitPos = nil self:Replan(r) end
   local bind = C.BindLocation and C.BindLocation()

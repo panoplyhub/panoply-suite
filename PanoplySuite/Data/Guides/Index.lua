@@ -16,8 +16,6 @@ if not set then return end
 set({
  apiVersion = 1,
  source = {
-  name = "Polestar",
-  url = "https://github.com/fitzforge/polestar",
   release = "v0.4.2.1",
   revision = "4e1cd841c94d41348635d7c67a7280c8ad9960c5",
   license = "GPL-3.0-only",

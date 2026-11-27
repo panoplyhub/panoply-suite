@@ -6,7 +6,7 @@
 local RD = {}
 _G.PanoplySuiteRouteData = RD
 RD.apiVersion = 1
-RD.version = "0.9.9.4"
+RD.version = "0.9.9.6"
 RD.source = "wago.tools DB2 (client tables) + VMaNGOS world DB (GPL-2.0-or-later)"
 -- Decode one flight trail string "x,y x,y ..." into { {x, y}, ... } (cached; on demand).
 local cache = setmetatable({}, { __mode = "k" })

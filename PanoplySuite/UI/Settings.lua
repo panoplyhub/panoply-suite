@@ -88,14 +88,14 @@ SUI.choices = {
       Panoply:Fire("OPTION_CHANGED", "routeSource", v)
       if Panoply.cdb.setupDone or #Panoply.Engine.steps > 0 then Panoply:Replan("settings") end
     end },
-  -- Nov 2026 (step 7): WoW Forever with Polestar's engine: which guide it follows. The leveling guide, or a guide added to this
-  -- computer from outside (a Polestar guide pack with the id PolestarEngine.ADDED_PACK; none ships yet). Each keeps its own place.
+  -- Nov 2026 (step 7): WoW Forever with PanoplyGuide's engine: which guide it follows. The leveling guide, or a guide added to this
+  -- computer from outside (a PanoplyGuide guide pack with the id PanoplyGuideEngine.ADDED_PACK; none ships yet). Each keeps its own place.
   guideSource = { label = "Guide source", values = { "leveling", "added" },
     names = { leveling = "Leveling guide", added = "Added guide" },
     tip = "Leveling guide (default): the leveling guide for your race and faction. Added guide: a guide that was added to this computer, when there is one. Each keeps its own step, so you can switch back to the leveling guide at any time and carry on where you were.",
-    get = function() return Panoply.PolestarEngine and Panoply.PolestarEngine:Source() or "leveling" end,
+    get = function() return Panoply.PanoplyGuideEngine and Panoply.PanoplyGuideEngine:Source() or "leveling" end,
     set = function(v)
-      local PE = Panoply.PolestarEngine
+      local PE = Panoply.PanoplyGuideEngine
       if not PE then return end
       if v == PE:Source() then return end
       local ok, why = PE:SetSource(v)

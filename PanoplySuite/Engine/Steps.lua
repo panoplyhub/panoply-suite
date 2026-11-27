@@ -105,7 +105,7 @@ Goals.eval = {
       if o and (o.finished or (o.numRequired > 0 and o.numFulfilled >= o.numRequired)) then return DONE end
       return TODO
     end
-    -- Nov 12 2026: a goal Polestar names by its item or creature (no objective number) is done when THAT part is: the item in the
+    -- Nov 12 2026: a goal PanoplyGuide names by its item or creature (no objective number) is done when THAT part is: the item in the
     -- bags, as many as the quest asks for, or the game's own objective line that names it finished. Never objective 1's state.
     if g.itemID and C.ItemCount(g.itemID) >= (g.count or Goals.ItemsNeeded(g.questID, g.itemID) or 1) then return DONE end
     local o = Goals.ObjectiveNamed(s, g.questID, g.partName)
@@ -177,7 +177,7 @@ end
 Goals.NotTaken = notTaken
 
 function Goals.Status(g, s)
-  -- WoW Forever with Polestar's engine (Engine/PolestarEngine.lua): the goal is Polestar's, and so is its state
+  -- WoW Forever with PanoplyGuide's engine (Engine/PanoplyGuideEngine.lua): the goal is PanoplyGuide's, and so is its state
   if g.ps then return g.status or TODO end
   if g.onlyIf and not g.onlyIf(s) then return HIDDEN end
   if notTaken(g, s) then return HIDDEN end
@@ -311,8 +311,8 @@ end
 function Engine:Target(step)
   if not step and Panoply:PlayAlong() then return nil end   -- 0.7.1: no guide target; waypoints still work
   step = step or self:Current()
-  -- Polestar's step (or its travel step): the guide's target is where Polestar's own waypoint is
-  if step and step.ps then return Panoply.PolestarEngine:Target() end
+  -- PanoplyGuide's step (or its travel step): the guide's target is where PanoplyGuide's own waypoint is
+  if step and step.ps then return Panoply.PanoplyGuideEngine:Target() end
   if step and self.detour == step then Goals.StepComplete(step, State) end
   if not step then return nil end
   if step.isDungeon then return nil end   -- nothing inside an instance has a spot the arrow could point at (no player position there)
@@ -326,7 +326,7 @@ function Engine:Target(step)
     local notYet = AFTER_PICKUP[g.type] and g.questID and not g.direct and not State:InLog(g.questID) and not State:IsCompleted(g.questID)
     if notYet then
       -- nothing to point at for this goal; and when it is the goal the step's own point was taken from, that point is not one either
-      -- (Nov 13 2026, Polestar 0.3.7.2 Skyborne "The Al'Aketh camp": the step's point was the item of a quest still to be taken)
+      -- (Nov 13 2026, PanoplyGuide 0.3.7.2 Skyborne "The Al'Aketh camp": the step's point was the item of a quest still to be taken)
       if g.mapID and g.mapID == step.mapID and g.x == step.x and g.y == step.y then stale = true end
     elseif g.mapID and g.status ~= DONE and g.status ~= HIDDEN then
       -- indoor target, you outside: the building's entrance first when we know it
@@ -350,7 +350,7 @@ function Engine:Target(step)
   end
   -- The step's own point is its first goal's. Once that goal is done it is a stale pin (the kill spot of a
   -- finished quest), never a place to send the player for the hand-ins that follow.
-  -- (Nov 13 2026, Polestar 0.3.7.2 Teldrassil ends on a "Fishers only" step: a character without Fishing was pointed 3800 yd away at
+  -- (Nov 13 2026, PanoplyGuide 0.3.7.2 Teldrassil ends on a "Fishers only" step: a character without Fishing was pointed 3800 yd away at
   -- Gubber Blump while the window said "Plan complete!")
   if step.mapID and not stale and anyShown then return step.mapID, step.x, step.y, step.title end
   return nil
@@ -381,7 +381,7 @@ function Engine:Next()
   if self.travel and not self.detour and Panoply.Travel then Panoply.Travel:Dismiss("skip") return end
   if self.detour and Panoply.ProfGuide then Panoply.ProfGuide:Snooze(self.detour) return end
   local cur = self.steps[self.index]
-  if cur and cur.ps then Panoply.PolestarEngine:Skip() return end   -- Polestar's step: Polestar skips it (and remembers)
+  if cur and cur.ps then Panoply.PanoplyGuideEngine:Skip() return end   -- PanoplyGuide's step: PanoplyGuide skips it (and remembers)
   self:NoteNotTaken(self.steps[self.index])
   self:Goto(self.index + 1, "manual")
 end
@@ -389,7 +389,7 @@ function Engine:Prev()
   if self.dungeon and Panoply.Dungeon then Panoply.Dungeon:Back() return end
   if self.detour then return end
   local cur = self.steps[self.index]
-  if cur and cur.ps then Panoply.PolestarEngine:Back() return end
+  if cur and cur.ps then Panoply.PanoplyGuideEngine:Back() return end
   self:Goto(self.index - 1, "manual")
 end
 
@@ -490,8 +490,8 @@ function Engine:Check()
   -- While the profession guide is active the route waits where it is; switching back resumes
   -- there (and catches up with anything already finished).
   if d and Panoply.ProfGuide and Panoply.ProfGuide:Active() == "professions" then return end
-  -- WoW Forever with Polestar's engine: Polestar decides what is done and moves the guide on; we only take its step over again
-  local PE = Panoply.PolestarEngine
+  -- WoW Forever with PanoplyGuide's engine: PanoplyGuide decides what is done and moves the guide on; we only take its step over again
+  local PE = Panoply.PanoplyGuideEngine
   if PE and PE:Active() then PE:Check() return end
   local step = self.steps[self.index]
   if not step then return end
@@ -532,7 +532,7 @@ function Engine:ConfirmCurrent()
   if step.isDungeon and Panoply.Dungeon then Panoply.Dungeon:Confirm(step) return end
   if step.isProf and Panoply.ProfGuide then Panoply.ProfGuide:Confirm(step) return end
   if step.isTravel and Panoply.Travel then Panoply.Travel:Dismiss("done") return end
-  if step.ps then Panoply.PolestarEngine:Confirm(step) return end
+  if step.ps then Panoply.PanoplyGuideEngine:Confirm(step) return end
   for _, g in ipairs(step.goals) do
     if g.type == "confirm" or g.type == "talk" or g.type == "learn" or g.type == "fly" then g.confirmed = true end
   end

@@ -212,11 +212,11 @@ function Arrow:Retarget()
   -- Waypoints (/panoply way, map Ctrl-right-click, quest icons) come before the guide step.
   local hm, hx, hy, hl = self:HandTarget()
   if hm then m, x, y, label = hm, hx, hy, hl end
-  -- WoW Forever with Polestar's engine: a spot picked by hand is routed by Polestar too (and let go when it is reached or cleared)
-  local PE = Panoply.PolestarEngine
-  -- Nov 14 2026 (website claim check S2): a profession step shown in front of Polestar's step (modes Mixed and Professions only) is
+  -- WoW Forever with PanoplyGuide's engine: a spot picked by hand is routed by PanoplyGuide too (and let go when it is reached or cleared)
+  local PE = Panoply.PanoplyGuideEngine
+  -- Nov 14 2026 (website claim check S2): a profession step shown in front of PanoplyGuide's step (modes Mixed and Professions only) is
   -- routed the same way, as long as it is the step in front and no spot was picked by hand (that wins, as on Classic Era); when the
-  -- detour ends, nil lets Polestar go back to its own target. Before this the arrow kept pointing at Polestar's target.
+  -- detour ends, nil lets PanoplyGuide go back to its own target. Before this the arrow kept pointing at PanoplyGuide's target.
   if PE and PE:Active() then
     local pm_, px_, py_, pl_ = hm, hx, hy, hl
     local E = Panoply.Engine
@@ -322,8 +322,8 @@ function Arrow:Update()
   local t = self.target
   if not t and self.dist then self.dist:SetText("") end   -- 0.8.2: no target, no leftover "Head to <zone>" on the pill
   if not t or C.InInstance() then self.last.target = nil if Panoply.UI and Panoply.UI.UpdateArrow then pcall(Panoply.UI.UpdateArrow, Panoply.UI) end return end
-  local PE = Panoply.PolestarEngine
-  if PE and PE:Active() then return self:UpdatePolestar(t) end
+  local PE = Panoply.PanoplyGuideEngine
+  if PE and PE:Active() then return self:UpdatePanoplyGuide(t) end
   local m, px, py = C.GetPlayerPos()
   if not m then
     -- 0.6.0 arrow fix: a loading screen or the moment after a zone change: a calm text, no arrow, no glow
@@ -370,11 +370,11 @@ function Arrow:Update()
   if Panoply.UI and Panoply.UI.UpdateArrow then pcall(Panoply.UI.UpdateArrow, Panoply.UI) end
 end
 
--- WoW Forever with Polestar's engine: the direction and the distance are the ones Polestar's own (hidden) arrow would show:
+-- WoW Forever with PanoplyGuide's engine: the direction and the distance are the ones PanoplyGuide's own (hidden) arrow would show:
 -- along its walking route, to the flight master or the dock of its travel plan, or straight at the target.
 Arrow.SEE_GUIDE = "See the guide"
-function Arrow:UpdatePolestar(t)
-  local st, yards, angle, zone = Panoply.PolestarEngine:Sample()
+function Arrow:UpdatePanoplyGuide(t)
+  local st, yards, angle, zone = Panoply.PanoplyGuideEngine:Sample()
   local function done() if Panoply.UI and Panoply.UI.UpdateArrow then pcall(Panoply.UI.UpdateArrow, Panoply.UI) end end
   if st == "nopos" then
     self.tex:Hide(); self.dist:SetText(Arrow.FINDING); self.last.target = nil; self.last.finding = true
@@ -385,13 +385,13 @@ function Arrow:UpdatePolestar(t)
     self.tex:Hide(); self.dist:SetText("Head to " .. zone); self.last.otherZone = zone
     return done()
   end
-  local words = Panoply.PolestarEngine:StateText(st, yards)
+  local words = Panoply.PanoplyGuideEngine:StateText(st, yards)
   if words then
-    -- 0.9.9: a walk Polestar cannot guide says so in Polestar's own words, on the distance line. 0.9.9.1: as Polestar's own arrow does
+    -- 0.9.9: a walk PanoplyGuide cannot guide says so in PanoplyGuide's own words, on the distance line. 0.9.9.1: as PanoplyGuide's own arrow does
     -- per state: while the walking route is being found ("routing") the arrow points straight at the target (when there is a bearing) with
     -- the words; in every other worded state (unmapped, submerged, water-depth, arrived-underwater) the words and no arrow
     self.dist:SetText(words); self.last.stateText = words; self.last.yards = nil
-    if Panoply.PolestarEngine.STATE_ARROW[st] and angle then
+    if Panoply.PanoplyGuideEngine.STATE_ARROW[st] and angle then
       local col = Skin.colors.arrowFar
       self.tex:SetVertexColor(col[1], col[2], col[3], 1)
       setRotation(self.tex, angle) self.tex:Show()

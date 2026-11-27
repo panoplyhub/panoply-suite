@@ -272,7 +272,7 @@ end
 -- Judge the place now. The first judgement (login) and the player's own switch count at once; any other change only after it has held
 -- for NG.HYSTERESIS_S seconds. Returns whether the area is a no-guide area.
 function NG:Update(force)
-  if Panoply.PolestarEngine and Panoply.PolestarEngine:Active() then return false end   -- Polestar's guides decide (WoW Forever)
+  if Panoply.PanoplyGuideEngine and Panoply.PanoplyGuideEngine:Active() then return false end   -- PanoplyGuide's guides decide (WoW Forever)
   local cand = self:Candidate()
   if cand == "hold" then self.pend = nil return self:Active() end
   local cur = self.area
@@ -293,8 +293,8 @@ end
 -- Hub phase 1: while a plan sent from Panoply Hub is the route (Engine/Hub.lua), the guide runs here as anywhere: the player
 -- sent that plan for this character on purpose. NG:Active (the area itself, and with it Record mode) is unchanged.
 function Panoply:NoGuideHere()
-  -- WoW Forever with Polestar's engine: Polestar knows where its guides reach; ours is not the judge there
-  if Panoply.PolestarEngine and Panoply.PolestarEngine:Active() then return false end
+  -- WoW Forever with PanoplyGuide's engine: PanoplyGuide knows where its guides reach; ours is not the judge there
+  if Panoply.PanoplyGuideEngine and Panoply.PanoplyGuideEngine:Active() then return false end
   return Panoply.NoGuide ~= nil and Panoply.NoGuide:Active() and not (Panoply.Hub ~= nil and Panoply.Hub:Holds())
 end
 

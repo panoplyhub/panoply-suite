@@ -125,7 +125,7 @@ function ST.Progress(step)
   for _, g in ipairs(step.goals or {}) do
     if g.status ~= "hidden" and not (g.hint and #step.goals > 1 and not (step.isProf and g.text)) then
       if g.ps and g.type ~= "complete" then
-        -- Polestar's goal: its own words and its own state (a "complete" goal still lists the game's objective lines, below)
+        -- PanoplyGuide's goal: its own words and its own state (a "complete" goal still lists the game's objective lines, below)
         out[#out + 1] = { text = ST.Clean(g.text), done = g.status == "done" }
       elseif g.type == "complete" and g.questID and S:InLog(g.questID) then
         local objs = S:Objectives(g.questID)
@@ -139,7 +139,7 @@ function ST.Progress(step)
         if not any then out[#out + 1] = { text = ST.Clean(ST.GoalText(g)), done = g.status == "done" } end
       elseif g.type == "objective" and g.questID and S:InLog(g.questID) then
         -- one goal stays one line: the game's own text for ITS objective, else the goal's text (never every objective of the quest)
-        -- Nov 12 2026: a goal with no objective number (Polestar named its item or creature) shows the game's line that names
+        -- Nov 12 2026: a goal with no objective number (PanoplyGuide named its item or creature) shows the game's line that names
         -- it, ticked by its own state (Engine/Steps.lua), never objective 1's line
         local o
         if g.objIndex then o = S:Objectives(g.questID)[g.objIndex]
@@ -183,8 +183,8 @@ end
 function ST.WhatNow()
   local QD = Panoply.QuestData
   local E = Panoply.Engine
-  -- WoW Forever with Polestar's engine: no step means no guide here, or a finished guide
-  if Panoply.PolestarEngine and Panoply.PolestarEngine:Active() then return Panoply.PolestarEngine:IdleText() end
+  -- WoW Forever with PanoplyGuide's engine: no step means no guide here, or a finished guide
+  if Panoply.PanoplyGuideEngine and Panoply.PanoplyGuideEngine:Active() then return Panoply.PanoplyGuideEngine:IdleText() end
   -- 0.9.7 (Nov 18 2026): the guide engine cannot run and nothing takes its place: one plain line (Core/Init.lua)
   if Panoply.GuideUnavailable and Panoply:GuideUnavailable() then return Panoply.GUIDE_UNAVAILABLE_TITLE, Panoply.GUIDE_UNAVAILABLE_LINE end
   -- 0.7.4.1: an area without a guide (Engine/NoGuide.lua): say so, in the tracker line's words
@@ -236,7 +236,7 @@ end
 function ST.NewZoneNote(step)
   if Panoply.PlayAlong and Panoply:PlayAlong() then return nil end        -- play-along mode: the guide is off, so is this
   if step and step.isDungeon then return nil end                 -- a dungeon step (Engine/Dungeon.lua) is the guide for where you are
-  if Panoply.PolestarEngine and Panoply.PolestarEngine:Active() then return nil end   -- Polestar's guides decide where there is a guide
+  if Panoply.PanoplyGuideEngine and Panoply.PanoplyGuideEngine:Active() then return nil end   -- PanoplyGuide's guides decide where there is a guide
   local QD, S = Panoply.QuestData, Panoply.State
   if not (QD and QD.NewZone and S) then return nil end
   local pos = S.pos
@@ -361,7 +361,7 @@ local NOT_A_CHAPTER = { ["Plan"] = true, ["No guide"] = true, ["Playing along"] 
 -- The name of the guide chapter a step belongs to ("Westfall"), else the step's zone, else nil.
 function ST.Chapter(step)
   if step and step.isDungeon then return step.dungeon or step.zone end
-  local PS = Panoply.PolestarEngine
+  local PS = Panoply.PanoplyGuideEngine
   if step and step.ps and PS then
     local z = PS.guideZone or ST.CleanChapter(PS.guideTitle)
     if z then return z end
@@ -397,7 +397,7 @@ function ST.Number(step)
     if DG and DG.StepNumber then local n, t = DG:StepNumber() return n, t, ST.Chapter(step) end
     return nil, nil, ST.Chapter(step)
   end
-  local PS = Panoply.PolestarEngine
+  local PS = Panoply.PanoplyGuideEngine
   if step.ps and PS and PS.Num then
     local n, t = PS:Num(step.psIndex)
     return n, t, ST.Chapter(step)
@@ -411,7 +411,7 @@ function ST.Number(step)
 end
 
 -- "Step 5 of 27 · Westfall" (spec 06a section 3.2). opts.chapter = false leaves the chapter off; inside a dungeon "Dungeon step 2 of 6".
--- Polestar showing a step other than the live one adds ", not your current step" (as before).
+-- PanoplyGuide showing a step other than the live one adds ", not your current step" (as before).
 function ST.NumberText(step, opts)
   opts = opts or {}
   local n, total, chapter = ST.Number(step)
@@ -505,9 +505,9 @@ function ST.MarkDone(step)
   if not (step and E) then return false end
   if step.onDone then local ok = pcall(step.onDone, step) return ok end   -- a step put in beside the guide (a trainer visit) says how
   if E.Current and E:Current() == step then E:ConfirmCurrent() return true end
-  if step.ps and Panoply.PolestarEngine then
+  if step.ps and Panoply.PanoplyGuideEngine then
     -- not the current step: tick only the open manual goal; none, nothing is ticked (never the step's first open goal)
-    local PS = Panoply.PolestarEngine
+    local PS = Panoply.PanoplyGuideEngine
     local goal = step.psConfirm or (PS.ManualGoal and PS.ManualGoal(step))
     if not goal then return false end
     return PS:Confirm(step, goal)

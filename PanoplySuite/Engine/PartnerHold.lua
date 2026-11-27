@@ -19,8 +19,8 @@ Panoply.PartnerHold = PartnerHold
 
 local MAX_NEEDS = 3   -- lines of "what they still need" on the help card
 
--- the engine's own table, as the adapter finds it (Engine/PolestarEngine.lua PS.P; the engine is named in that file only)
-local function P() local pe = Panoply.PolestarEngine return pe and pe.P and pe.P() or nil end
+-- the engine's own table, as the adapter finds it (Engine/PanoplyGuideEngine.lua PS.P; the engine is named in that file only)
+local function P() local pe = Panoply.PanoplyGuideEngine return pe and pe.P and pe.P() or nil end
 
 local function call(fn, ...)
   if type(fn) ~= "function" then return nil end
@@ -31,7 +31,7 @@ end
 
 -- the guide's own words go through Panoply's voice (never the engine's name in what the player reads)
 local function voice(s)
-  local V = Panoply.PolestarVoice
+  local V = Panoply.PanoplyGuideVoice
   if V and V.GuideText and type(s) == "string" then return V.GuideText(s) end
   return s
 end
@@ -45,7 +45,7 @@ local listening   -- the engine table whose messages we listen to
 
 -- Partner levelling is on and the engine is the one that runs the guide
 local function enabled()
-  local PE = Panoply.PolestarEngine
+  local PE = Panoply.PanoplyGuideEngine
   if not (PE and PE.Active and PE:Active()) then return false end
   if Panoply.db and Panoply.db.partyShare == false then return false end
   local p = P()
@@ -246,8 +246,8 @@ end
 
 -- The card for the guide window, or nil: { kind = "hold" | "help" | "ahead", kicker, title, body, lines (what they still need, on the
 -- help card), partner, questID, buttons = { a, b } } with a = { label, tip, fn, action } and b the same (also given as card.a and
--- card.b, the shape of the guide's own questions). action names the Engine/PolestarParty.lua call that does the same as fn:
--- "Help", "StopHelp", and "GoOn" for "Go on without them" (PolestarParty:GoOn calls PartnerHold:Release while a hold is on).
+-- card.b, the shape of the guide's own questions). action names the Engine/PanoplyGuideParty.lua call that does the same as fn:
+-- "Help", "StopHelp", and "GoOn" for "Go on without them" (PanoplyGuideParty:GoOn calls PartnerHold:Release while a hold is on).
 function PartnerHold:Card()
   local s = self:Update()
   if not s then return nil end

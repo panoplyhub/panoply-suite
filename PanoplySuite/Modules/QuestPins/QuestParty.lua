@@ -2,7 +2,7 @@
 -- Panoply Suite sync channel (Engine/Sync.lua: prefix HPATH1, PARTY channel, chunking at 255 bytes,
 -- throttled queue). Message kind "Q" = a compact summary of the sender's quest log.
 -- Information only: nothing is done for anyone.
--- 0.9.7 (partner leveling): with the guide engine's party sync on (Engine/PolestarParty.lua), the party's progress is the engine's:
+-- 0.9.7 (partner leveling): with the guide engine's party sync on (Engine/PanoplyGuideParty.lua), the party's progress is the engine's:
 -- the same quest IDs and counts, already sent to the party by the engine, so nothing of ours is sent a second time. Who has a
 -- quest, the counts and the lines below then read from it (P:Engine). "Share with my party" off (PanoplySuiteDB.partyShare)
 -- switches this off too: nothing sent, nothing shown.
@@ -94,11 +94,11 @@ end
 
 -- 0.9.7: the engine's party members when its party sync is the one running, else nil (our own messages are then the source).
 function P:Engine()
-  local PP = Panoply.PolestarParty
+  local PP = Panoply.PanoplyGuideParty
   if not (PP and PP.Enabled and PP:Enabled()) then return nil end
   return PP:Members()
 end
--- the engine's party progress changed (Engine/PolestarParty.lua hears its message)
+-- the engine's party progress changed (Engine/PanoplyGuideParty.lua hears its message)
 function P:EngineChanged()
   self.version = self.version + 1
   Panoply:Fire("QUEST_PARTY_CHANGED")

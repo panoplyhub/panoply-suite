@@ -1,33 +1,62 @@
-# Panoply Suite 0.9.9.4
+# Panoply Suite 0.9.9.6
 
 A personal leveling and professions guide for **WoW Forever**, for Alliance and Horde.
 Since 0.9.7 Panoply Suite is for WoW Forever only.
 
 ## Install
-**Easiest:** download `PanoplySuite-0.9.9.4-Setup.zip`, unzip it, quit WoW and
-double-click **Install Panoply Suite (Windows).bat** or **Install Panoply Suite (Mac).command** (on a Mac
-right-click > Open the first time). It installs or updates all three folders, `PanoplySuite`,
-`PanoplySuite_QuestData` and `PanoplySuite_RouteData`. It finds WoW, backs up your old Panoply Suite folders and WTF folder to
-Documents > Panoply Suite Backups, installs into `_forever_` only, and keeps your
-settings and progress. Any other game folder is left exactly as it is. `READ ME FIRST.txt` in the zip has the details. To do it by hand instead:
+The download `PanoplySuite-0.9.9.6.zip` holds six folders, and all six go into the game's AddOns folder:
 
-1. Quit WoW.
-2. Copy the `PanoplySuite` folder into the AddOns folder of your WoW Forever game.
-   - Windows: `C:\Program Files (x86)\World of Warcraft\_forever_\Interface\AddOns\`
-   - Mac: `/Applications/World of Warcraft/_forever_/Interface/AddOns/`
-   - If your Forever folder has another name, use whichever folder holds your Forever game.
-     See LAUNCH-DAY-CHECKLIST.md.
-   - If the `Interface/AddOns` folder doesn't exist yet, create it.
-   - Keep the folder name exactly `PanoplySuite`.
-3. Copy the **PanoplySuite_QuestData** folder next to it (same `Interface/AddOns` folder, folder name
-   exactly `PanoplySuite_QuestData`). It is Panoply Suite's own quest, NPC, profession and gathering
-   database, built from the open VMaNGOS server data. It is the only quest data Panoply Suite reads.
-   Without it, Panoply Suite still loads, tells you the quest data is missing and follows your quest
-   log only.
-4. Start the game. On the character screen click **AddOns**. Make sure Panoply Suite is ticked. If it
-   says "out of date", tick **Load out of date AddOns**.
-5. Type `/panoply selftest`. The first line names the game Panoply Suite detected, for example
-   `detected game: WoW Forever`.
+| Folder | What it is |
+|---|---|
+| `PanoplySuite` | the add-on itself (the guide engine is inside it) |
+| `PanoplySuite_QuestData` | its quest, NPC, profession and gathering data |
+| `PanoplySuite_RouteData` | its travel data |
+| `PanoplySuite_Plans` | data files Panoply Hub fills in (prices, ticket numbers); empty without it |
+| `PanoplySuite_Languages` | the guide's texts in nine more languages; loaded only on a client in one of them |
+| `Hearthpath` | a small stand-in with no code: it keeps settings saved under the add-on's old name loading |
+
+**Windows (10 or 11)**
+1. Quit World of Warcraft (the game itself; the Battle.net app can stay open).
+2. Right-click `PanoplySuite-0.9.9.6.zip`, choose "Extract All...", then "Extract". Open the new folder.
+3. Open `World of Warcraft\_forever_\Interface\AddOns` (usually in `C:\Program Files (x86)\`). Create `Interface` and
+   `AddOns` if they are missing.
+4. If you are updating, delete the old `PanoplySuite`, `PanoplySuite_QuestData`, `PanoplySuite_RouteData`,
+   `PanoplySuite_Plans`, `PanoplySuite_Languages` and `Hearthpath` folders there first. Keep `Hearthpath_Data` if you
+   have it (it holds your saved auction prices).
+5. Copy the six folders from the download into `AddOns`. Keep their names exactly as they are.
+6. Start the game. On the character screen click **AddOns** and make sure Panoply Suite is ticked. If it says "out of
+   date", tick **Load out of date AddOns**. In the game, type `/panoply`.
+
+**Mac**
+1. Quit World of Warcraft.
+2. Double-click `PanoplySuite-0.9.9.6.zip`. A folder with the six folders appears next to it.
+3. In Finder open `/Applications/World of Warcraft/_forever_/Interface/AddOns`. Create `Interface` and `AddOns` if they
+   are missing.
+4. If you are updating, move the old `PanoplySuite`, `PanoplySuite_QuestData`, `PanoplySuite_RouteData`,
+   `PanoplySuite_Plans`, `PanoplySuite_Languages` and `Hearthpath` folders there to the Trash first. Keep
+   `Hearthpath_Data` if you have it.
+5. Drag the six folders from the download into `AddOns`.
+6. Start the game, tick Panoply Suite under **AddOns** on the character screen, and type `/panoply`.
+
+Your settings and progress are kept: they live in the game's `WTF` folder, which you do not touch. Panoply Suite is for
+WoW Forever and installs into `_forever_` only; put nothing into any other game folder. If your Forever folder has
+another name, use whichever folder holds your Forever game.
+
+Updating from an earlier version: versions 0.9.5 to 0.9.9.4 also put one more small stand-in folder into AddOns, besides
+`Hearthpath` (always keep `Hearthpath`). Panoply Suite no longer uses or ships it. You can tell it by two things: its .toc
+file has the line `## X-Panoply-StandIn: 1`, and it has no `Core`, `UI` or `Engine` folder inside. You may delete that
+folder. Leave every other folder alone, including any add-on you installed yourself.
+
+To check the install, type `/panoply selftest`. The first line names the game Panoply Suite detected, for example
+`detected game: WoW Forever`.
+
+(Testers also get double-click installers for Windows and Mac; `READ ME FIRST.txt` beside them explains those.)
+
+## Credits
+The guide engine, its guides, travel planner, walking router and walking maps are **Polestar** by Fitz and the Polestar
+authors (GNU GPL version 3, https://github.com/fitzforge/polestar), carried inside Panoply Suite as a modified version
+under Panoply's own names. Thank you. Every credit and licence is written out in `NOTICE.md` (this folder) and in
+`Licenses/`; what Panoply Suite changed is listed in `GuideEngine/PANOPLY-CHANGES.md`.
 
 ## First run
 The first time any character logs in on your account, a one-page **thank-you** opens and leads straight into the
@@ -42,7 +71,7 @@ click **Start guiding**. Run it again any time with `/panoply setup` or from Hel
 ## Use
 - **Minimap button** (the gold crest): left-click shows or hides the guide window. Right-click
   opens the menu. Drag it to move it around the minimap.
-- `/panoply` (or `/ps` for short) opens the menu. It has four tabs:
+- `/panoply` opens the menu. It has four tabs:
   - **Leveling** shows your route, with Replan now, Skip step and Reset plan buttons.
   - **Professions**: lists the professions Panoply Suite found on this character. For the
     selected one you get your skill and a bar to the next trainer cap, a **Your next step** card
@@ -110,7 +139,7 @@ first step. A pick made during a fight waits until the fight is over.
 ### Commands
 | Command | What it does |
 |---|---|
-| `/panoply` or `/ps` | Open or close the menu. Every command below also works with `/ps`, e.g. `/ps noguide` |
+| `/panoply` | Open or close the menu. |
 | `/panoply guide` | Show or hide the guide window |
 | `/panoply guide leveling` / `professions [name]` / `both` | Pick which guide the window follows, e.g. `/panoply guide professions mining` |
 | `/panoply switch` | Flip between the levelling and the profession guide |

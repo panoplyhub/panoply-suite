@@ -1,0 +1,8 @@
+<Bindings>
+	<Binding name="PANOPLYGUIDE_RECORDER_TRAIL" category="PanoplyGuide">
+		PanoplyGuideRecorder_Command("trail toggle")
+	</Binding>
+	<Binding name="PANOPLYGUIDE_RECORDER_WINDOW" category="PanoplyGuide">
+		PanoplyGuideRecorder_Command("ui")
+	</Binding>
+</Bindings>

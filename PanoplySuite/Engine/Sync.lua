@@ -68,19 +68,19 @@ end
 -------------------------------------------------------------------------------
 -- Sending (queued + throttled)
 -------------------------------------------------------------------------------
--- WoW Forever with Polestar's engine (Engine/PolestarEngine.lua): the steps are Polestar's and it moves the guide on itself, so our
+-- WoW Forever with PanoplyGuide's engine (Engine/PanoplyGuideEngine.lua): the steps are PanoplyGuide's and it moves the guide on itself, so our
 -- step-by-step partner sync (shared route, waiting for each other) has nothing to hold on to. It is off there.
--- 0.9.7 (WoW Forever only): leveling with a partner is the engine's own party sync, drawn and switched by Engine/PolestarParty.lua.
+-- 0.9.7 (WoW Forever only): leveling with a partner is the engine's own party sync, drawn and switched by Engine/PanoplyGuideParty.lua.
 -- This file's route sharing is no bridge to it and no second way to level together: with the engine's guide on it sends nothing,
--- and what it says about the partner (StatusText, FriendlyStatus) is PolestarParty's words. It only listens for a party member whose
+-- and what it says about the partner (StatusText, FriendlyStatus) is PanoplyGuideParty's words. It only listens for a party member whose
 -- add-on still speaks this old way, so the partner line can say why the two of you cannot share a step (S:OldClients).
 -- "Share with my party" off (PanoplySuiteDB.partyShare) switches this file off as well: nothing is sent to the party at all.
-local function polestar() local PE = Panoply.PolestarEngine return PE ~= nil and PE:Active() end
+local function panoplyguide() local PE = Panoply.PanoplyGuideEngine return PE ~= nil and PE:Active() end
 local function shareOff() return Panoply.db ~= nil and Panoply.db.partyShare == false end
-function S:Enabled() return (not Panoply.db or Panoply.db.syncEnabled ~= false) and not shareOff() and not polestar() end
+function S:Enabled() return (not Panoply.db or Panoply.db.syncEnabled ~= false) and not shareOff() and not panoplyguide() end
 
 function S:PausedReason()
-  if polestar() then return "polestar" end
+  if panoplyguide() then return "panoplyguide" end
   -- Midnight rules (Forever) block addon messages in instances. Classic Era has no such rule.
   local inInst, kind = C.InInstance()
   if C.Features().restrictions and inInst and (kind == "party" or kind == "raid" or kind == "scenario") then return "dungeon" end
@@ -267,7 +267,7 @@ function S:OldClients()
 end
 
 function S:OnMessage(prefix, msg, channel, sender)
-  if prefix == Panoply.prefix and sender and type(msg) == "string" and polestar() then return self:OnOldClient(msg, channel, sender) end
+  if prefix == Panoply.prefix and sender and type(msg) == "string" and panoplyguide() then return self:OnOldClient(msg, channel, sender) end
   if prefix ~= Panoply.prefix or not self:Enabled() or not sender or type(msg) ~= "string" then return end
   local open = self.openKinds[msg:sub(1, 1)] and true or false
   if not self:Accepts(sender, open) then return end
@@ -390,8 +390,8 @@ end
 
 function S:StatusText()
   local why = self:PausedReason()
-  if why == "polestar" then   -- 0.9.7: partner leveling is the engine's party sync (Engine/PolestarParty.lua)
-    local PP = Panoply.PolestarParty
+  if why == "panoplyguide" then   -- 0.9.7: partner leveling is the engine's party sync (Engine/PanoplyGuideParty.lua)
+    local PP = Panoply.PanoplyGuideParty
     return PP and PP.StatusText and PP:StatusText() or "Sync off"
   end
   if not self:Enabled() then return "Sync off" end
@@ -841,9 +841,9 @@ end
 function S:FriendlyStatus()
   local why = self:PausedReason()
   -- Nov 14 2026 (step 21): the engine is not named in what the player reads
-  -- 0.9.7: partner leveling runs on the guide's own party sync; its words are Engine/PolestarParty.lua's
-  if why == "polestar" then
-    local PP = Panoply.PolestarParty
+  -- 0.9.7: partner leveling runs on the guide's own party sync; its words are Engine/PanoplyGuideParty.lua's
+  if why == "panoplyguide" then
+    local PP = Panoply.PanoplyGuideParty
     return PP and PP.FriendlyStatus and PP:FriendlyStatus() or "Sync is off."
   end
   if not self:Enabled() then return "Sync is off. Turn it on in Settings to level together." end

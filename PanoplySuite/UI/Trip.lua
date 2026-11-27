@@ -37,7 +37,7 @@ end
 
 function Trip.Long(l)
   local k = l.kind
-  if l.ps and l.label then return l.label, nil end   -- a leg of Polestar's plan: in Polestar's own words
+  if l.ps and l.label then return l.label, nil end   -- a leg of PanoplyGuide's plan: in PanoplyGuide's own words
   if k == "walk" then
     local to = l.to
     local where = (to.kind == "fp" and ((to.npcName and to.npcName ~= "") and ("%s (flight master)"):format(to.npcName) or "the flight master"))
@@ -57,7 +57,7 @@ function Trip.Long(l)
   end
 end
 
--- 0.9.6.2 launch fix (Nov 18 2026, Northshire to Stormwind City): Polestar splits one walk into pieces at the gates and passes
+-- 0.9.6.2 launch fix (Nov 18 2026, Northshire to Stormwind City): PanoplyGuide splits one walk into pieces at the gates and passes
 -- on the way, and a piece's end has no name of its own, so the route box read "Walk to Stormwind City" three times (1 min 51 s,
 -- 3 s, 2 min 3 s). The rows a panel lists: walks in a row that read the same are one row with their times added, and a walk under
 -- SHORT_WALK seconds is not listed (unless it is the only row). Display only: the route, its legs and its total are unchanged.

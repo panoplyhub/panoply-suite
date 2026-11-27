@@ -1,34 +1,36 @@
--- Panoply Suite: runs the bundled Polestar guide engine from inside Panoply Suite's own folders (WoW Forever only).
--- Original code for Panoply Suite (GPL-3.0-only). It loads Polestar's files; it copies none of Polestar's code.
+-- Panoply Suite: runs the bundled guide engine from inside Panoply Suite's own folders (WoW Forever only).
+-- Original code for Panoply Suite (GPL-3.0-only). It loads the guide engine's files; it copies none of their code.
+-- Whose the guide engine is, its licence and Panoply Suite's changes to it: NOTICE.md and GuideEngine/PANOPLY-CHANGES.md.
 --
--- Why (0.9.5, 2026-11-15: "i dont want polestar out there like that"): Polestar's release is 27 add-on folders, which
--- the game's AddOns list showed as 27 rows. tools/update_polestar_engine.py now puts those folders inside PanoplySuite/
--- (PanoplySuite/Polestar/<folder>/) and, for the nine languages, PanoplySuite_Languages/ (load on demand). Each Lua file
--- of Polestar's is wrapped, on its first and last line only, in PanoplySuiteBundle.File(folder, path, function(...) ... end);
--- the tool's --check proves the rest of every file is Polestar's release. Each wrapped function gets the environment
--- below (B.env): its C_AddOns and CreateFrame are this file's, every other name is the game's own (reads and writes go to
--- _G), so nothing in Polestar's files changes and no local is added (Lua allows 200; UI/GuideFrame.lua has them all).
+-- Why (0.9.5): the guide engine's release is many add-on folders, which the game's AddOns list showed as that many rows.
+-- Panoply Suite's bundling tool puts those folders inside PanoplySuite/ (PanoplySuite/GuideEngine/<folder>/) and, for the
+-- nine languages, PanoplySuite_Languages/ (load on demand). Each Lua file of the engine is wrapped, on its first and
+-- last line only, in PanoplySuiteBundle.File(folder, path, function(...) ... end). Each wrapped function gets the
+-- environment below (B.env): its C_AddOns and CreateFrame are this file's, every other name is the game's own (reads
+-- and writes go to _G), so no local is added (Lua allows 200; UI/GuideFrame.lua has them all).
 --
--- What this file does so Polestar runs as it did in its own folders:
---   * each Polestar folder keeps its own name and private table (the file's "..."), as the game gave them;
---   * its files run when the game would have run them: Polestar's main folder as Panoply Suite loads (it loaded just
---     before Panoply Suite, and still does: the bundle's lines come first in the TOC); the folders that were not load on
---     demand (Polestar_Guides, Polestar_Recorder) right after Polestar's own ADDON_LOADED, in the order the game used;
---     the load-on-demand ones when Polestar asks for them (C_AddOns.LoadAddOn), the language add-on loaded first for a
---     language folder;
---   * ADDON_LOADED("<that folder>") is handed to the frames Polestar's files made, at those moments, after the saved data
---     is in (Panoply Suite's ADDON_LOADED, which comes after PanoplySuite's saved variables, Polestar's among them);
---   * Polestar's own questions about add-ons (C_AddOns, the copy its files see) are answered for its folders from
---     their TOC fields (PanoplySuite/Polestar/Pieces.lua); every other add-on is the game's answer;
+-- 0.9.9.5 (Nov 25 2026): every name of the engine's own (folders, files, globals, frames, slash commands, saved
+-- data, hidden-message prefixes, text) is Panoply's now ("PanoplyGuide..."), so nothing a player or another add-on can
+-- see carries the engine's old name, and the engine's own add-on can be installed next to Panoply Suite: the two share
+-- no folder, no saved-data name and no global. There is no stand-in folder any more.
+--
+-- What this file does so the engine runs as it did in its own folders:
+--   * each engine folder keeps a name and a private table of its own (the file's "..."), as the game gave them;
+--   * its files run when the game would have run them: the main folder as Panoply Suite loads (the engine's lines come
+--     first in the TOC); the folders that were not load on demand right after the main folder's own ADDON_LOADED, in
+--     the order the game used; the load-on-demand ones when the engine asks for them (C_AddOns.LoadAddOn), the
+--     language add-on loaded first for a language folder;
+--   * ADDON_LOADED("<that folder>") is handed to the frames the engine's files made, at those moments, after the saved
+--     data is in (Panoply Suite's ADDON_LOADED, which comes after PanoplySuite's saved variables, the engine's among them);
+--   * the engine's own questions about add-ons (C_AddOns, the copy its files see) are answered for its folders from
+--     their TOC fields (PanoplySuite/GuideEngine/Pieces.lua); every other add-on is the game's answer;
 --   * its pictures, fonts and sounds are found in their new folder (Dir);
---   * Polestar's saved data: PanoplySuite's WoW Forever TOCs list PolestarDB, PolestarCharDB and the Recorder's two, so
---     the game saves them with Panoply Suite's. A player who had the earlier bundle has them in the old Polestar files;
---     the stand-in add-on in the old "Polestar" folder (no code, the two names in its TOC) keeps those loading, and the
---     first time a character logs in its tables are taken from there when Panoply Suite has none yet (Takeover). Nothing
---     here edits the old files; the game writes them back at log out because the stand-in lists the names (same tables).
---     The Recorder's two tables had no stand-in: an old WTF/.../Polestar_Recorder.lua stays on disk, not loaded.
--- Not on Classic Era (Polestar is for WoW Forever; its TOCs never loaded there), and not when the player has a Polestar
--- of their own loaded (a full one in the "Polestar" folder): then that one runs, as before, and these files do nothing.
+--   * its saved data: PanoplySuite's TOCs list PanoplyGuideDB, PanoplyGuideCharDB and the Recorder's two, so the game
+--     saves them with Panoply Suite's (WTF/.../SavedVariables/PanoplySuite.lua). A player coming from 0.9.5 to 0.9.9.4
+--     has them in those same files under the old names: the game still reads them in (it runs the whole saved file), and
+--     Migrate below moves each table to its new name once, the first time each character logs in. The old names are not
+--     in the TOC any more, so the game writes only the new ones back.
+-- Not on Classic Era (the engine is for WoW Forever; its TOCs never loaded there).
 local B = {}
 PanoplySuiteBundle = B
 
@@ -38,13 +40,18 @@ local realAddOns = G.C_AddOns
 local realCreateFrame = G.CreateFrame
 
 B.ADDON = "PanoplySuite"
-B.STANDIN = "Polestar"                  -- the old folder name the game files Polestar's saved data under (the stand-in)
-B.STANDIN_FIELD = "X-Panoply-StandIn"
-B.SAVED = { "PolestarDB", "PolestarCharDB", "PolestarRecorderDB", "PolestarRecorderCharDB" }
+B.SAVED = { "PanoplyGuideDB", "PanoplyGuideCharDB", "PanoplyGuideRecorderDB", "PanoplyGuideRecorderCharDB" }
+-- The names the same four tables were saved under by Panoply Suite 0.9.5 to 0.9.9.4, in the same order, and the three
+-- spellings of the engine's old name with what each is now (for the names kept INSIDE the saved tables). These lines
+-- are the only place the old name is spelled in Panoply Suite's code; they can go once every player has moved over.
+B.SAVED_OLD = { "PolestarDB", "PolestarCharDB", "PolestarRecorderDB", "PolestarRecorderCharDB" }   -- OLD-SAVED-NAMES
+B.WORDS_OLD = { { "Polestar", "PanoplyGuide" }, { "polestar", "panoplyguide" }, { "POLESTAR", "PANOPLYGUIDE" } }   -- OLD-SAVED-NAMES
+-- Panoply Suite's own saved tables whose top-level keys carried the old name (settings such as the two "quiet" switches)
+B.OWN_SAVED = { "PanoplySuiteDB", "PanoplySuiteCharDB" }
 
 local folders, order = {}, {}           -- name -> folder record (Pieces.lua); the game's load order
 local loaded, running = {}, {}          -- folder -> true once its files ran and its ADDON_LOADED went out; while running
-local frames = {}                       -- every frame Polestar's files made, in order (ADDON_LOADED goes to these)
+local frames = {}                       -- every frame the engine's files made, in order (ADDON_LOADED goes to these)
 local started = false
 local afterStart = {}
 
@@ -60,22 +67,32 @@ local function safely(fn, ...)
   return xpcall(function() return fn(unpack(args, 1, n)) end, errorHandler())
 end
 
--- Why it stays off: "era" (not WoW Forever), "own" (the player's own Polestar is loaded), or nil (on).
+-- Why it stays off: "era" (not WoW Forever), or nil (on). (Until 0.9.9.4 it also stayed off beside the engine's own add-on;
+-- since 0.9.9.5 the two share no name, so both run.)
 local function offReason()
   local toc = G.GetBuildInfo and select(4, G.GetBuildInfo())
   if type(toc) ~= "number" or toc < 16000 or toc >= 20000 then return "era" end
-  if rawget(G, "Polestar") ~= nil then return "own" end
   return nil
 end
 B.off = offReason()
 
--- Polestar's saved tables as they stand while PanoplySuite's files load: the stand-in's (the old files), or the player's
--- own Polestar's, both loaded before Panoply Suite. PanoplySuite's own saved variables arrive after its files.
+-- The globals of the OLD names as they stand while PanoplySuite's files load, before PanoplySuite's saved variables
+-- arrive: nil, or another add-on's own tables (the engine's own add-on, when the player has it and it loaded first).
+-- Whatever stands there then is not ours and is put back untouched by Migrate.
 local early = {}
-for _, n in ipairs(B.SAVED) do early[n] = rawget(G, n) end
+for i, n in ipairs(B.SAVED_OLD) do early[i] = rawget(G, n) end
+-- The globals of the NEW names as they stand when the last of PanoplySuite's files has run (Core/Bootstrap.lua calls
+-- B.Snapshot), just before the game reads the saved variables in. A table there then was made by the engine's own files as
+-- they loaded (a setting read at load time makes an empty one: PanoplyGuide/Core/Init.lua DB()), not read from the saved
+-- file. Review fix (0.9.9.5): without this, the account table of a player coming from 0.9.9.4 was never moved, because the
+-- engine had already made an empty one under the new name, and the game then saved the empty one.
+local made = {}
+function B.Snapshot()
+  for i, n in ipairs(B.SAVED) do made[i] = rawget(G, n) end
+end
 
 -------------------------------------------------------------------------------
--- The folders (PanoplySuite/Polestar/Pieces.lua, written by tools/update_polestar_engine.py)
+-- The folders (PanoplySuite/GuideEngine/Pieces.lua, written by Panoply Suite's bundling tool)
 -------------------------------------------------------------------------------
 function B.Define(def)
   B.release = def.release
@@ -97,7 +114,7 @@ function B.Folder(name) return folders[name] end
 function B.Folders() return order end
 function B.IsLoaded(name) return loaded[name] == true end
 
--- Where a Polestar folder's files are now, for "Interface\\AddOns\\" .. Dir(name) .. "\\Media\\...". Any other name as it is.
+-- Where a engine folder's files are now, for "Interface\\AddOns\\" .. Dir(name) .. "\\Media\\...". Any other name as it is.
 function B.Dir(name)
   local f = folders[name]
   return f and f.dir or name
@@ -120,19 +137,19 @@ local function run(f, fn)
   running[f.name] = nil
 end
 
--- Called by every wrapped file of Polestar's as it loads.
+-- Called by every wrapped file of the engine's as it loads.
 function B.File(name, path, fn)
   if B.off then return end
   setfenv(fn, B.env)
   local f = folders[name]
   if not f then
-    errorHandler()("Panoply Suite: " .. tostring(name) .. "/" .. tostring(path) .. " is not in Pieces.lua (run tools/update_polestar_engine.py)")
+    errorHandler()("Panoply Suite: " .. tostring(name) .. "/" .. tostring(path) .. " is not in Pieces.lua (the bundle is out of date)")
     return
   end
   if f.mode == "now" then run(f, fn) else f.chunks[#f.chunks + 1] = fn end
 end
 
--- ADDON_LOADED(name) to the frames Polestar's files made, as the game sends it to every frame registered for it.
+-- ADDON_LOADED(name) to the frames the engine's files made, as the game sends it to every frame registered for it.
 local function fireLoaded(name)
   for i = 1, #frames do
     local fr = frames[i]
@@ -156,7 +173,25 @@ local function realLoad(name)
   return load(name)
 end
 
--- Polestar's C_AddOns.LoadAddOn for one of its folders: the files run now, then its ADDON_LOADED. -> loaded, reason
+-- The engine's files register short command words next to their long one. The short words are also the words of the
+-- engine's own add-on when a player has it installed beside Panoply Suite, and the game gives a word two add-ons both
+-- register to either of them. So only the words that start with B.COMMAND_WORD stay registered (0.9.9.5).
+B.COMMANDS = { "PANOPLYGUIDE", "PANOPLYGUIDEREC" }
+B.COMMAND_WORD = "/panoplyguide"
+function B.OwnCommands()
+  for _, cmd in ipairs(B.COMMANDS) do
+    local keep, i = {}, 1
+    while type(rawget(G, "SLASH_" .. cmd .. i)) == "string" do
+      local word = G["SLASH_" .. cmd .. i]
+      if word:sub(1, #B.COMMAND_WORD) == B.COMMAND_WORD then keep[#keep + 1] = word end
+      G["SLASH_" .. cmd .. i] = nil
+      i = i + 1
+    end
+    for j = 1, #keep do G["SLASH_" .. cmd .. j] = keep[j] end
+  end
+end
+
+-- the engine's C_AddOns.LoadAddOn for one of its folders: the files run now, then its ADDON_LOADED. -> loaded, reason
 function B.Load(name)
   local f = folders[name]
   if not f then return realLoad(name) end
@@ -164,7 +199,7 @@ function B.Load(name)
   if loaded[name] or running[name] then return true end
   for _, dep in ipairs(f.deps) do
     local d = folders[dep]
-    -- a folder that needs Polestar loads while Polestar's own files run too (its language folder does), as in the game
+    -- a folder that needs the engine loads while the engine's own files run too (its language folder does), as in the game
     if d and not (loaded[dep] or running[dep] or d.mode == "now") then
       if not B.Load(dep) then return false, "DEP_MISSING" end
     elseif not d and not realLoaded(dep) then
@@ -186,62 +221,92 @@ function B.Load(name)
   loaded[name] = true
   -- a client plays in one language: once its folder ran, the other language folders' code (parsed with it, never run)
   -- is let go, so a German client does not keep eight more languages in memory
-  if meta(f, "X-Polestar-Locale") then
+  if meta(f, "X-PanoplyGuide-Locale") then
     for _, o in ipairs(order) do
-      if o ~= f and o.addon == f.addon and not loaded[o.name] and meta(o, "X-Polestar-Locale") then o.chunks, o.dropped = {}, true end
+      if o ~= f and o.addon == f.addon and not loaded[o.name] and meta(o, "X-PanoplyGuide-Locale") then o.chunks, o.dropped = {}, true end
     end
   end
+  B.OwnCommands()
   fireLoaded(name)
   return true
 end
 
 -------------------------------------------------------------------------------
--- The saved data
+-- The saved data: moving it from the old names (0.9.5 to 0.9.9.4) to the new ones, once
 -------------------------------------------------------------------------------
--- Is the "Polestar" add-on there the stand-in (no code, only the saved-data names)?
-local function standIn()
-  local get = realAddOns and realAddOns.GetAddOnMetadata
-  if not get then return false end
-  local ok, v = pcall(get, B.STANDIN, B.STANDIN_FIELD)
-  return ok and v ~= nil and tostring(v) ~= ""
+local function newWord(str)
+  for _, w in ipairs(B.WORDS_OLD) do
+    if str:find(w[1], 1, true) then str = str:gsub(w[1], w[2]) end
+  end
+  return str
 end
 
--- The first login of each character after the update: its Polestar tables are still only in the old files (loaded by
--- the stand-in before Panoply Suite); Panoply Suite has none of its own yet, so it takes those. A table Panoply Suite
--- already has is never replaced. -> the names taken
-function B.Takeover()
+-- The same table with every text in it (keys and values, at any depth) carrying the new name where it carried the old
+-- one: the engine keeps folder names, guide pack names and its own setting names inside its saved data, and its code
+-- now asks for them by their new names. Done in place; a table reached twice is done once.
+local function renameInside(t, seen)
+  seen = seen or {}
+  if seen[t] then return t end
+  seen[t] = true
+  local moves
+  for k, v in pairs(t) do
+    if type(v) == "table" then
+      renameInside(v, seen)
+    elseif type(v) == "string" then
+      local nv = newWord(v)
+      if nv ~= v then t[k] = nv end
+    end
+    if type(k) == "string" then
+      local nk = newWord(k)
+      if nk ~= k then moves = moves or {}; moves[#moves + 1] = { k, nk } end
+    end
+  end
+  if moves then
+    for _, m in ipairs(moves) do
+      local v = rawget(t, m[1])
+      rawset(t, m[1], nil)
+      if rawget(t, m[2]) == nil then rawset(t, m[2], v) end   -- a value already saved under the new name wins
+    end
+  end
+  return t
+end
+B.RenameInside = renameInside
+
+-- Called at Start (PanoplySuite's saved variables are in). For each of the four tables: when the game has just read a
+-- table in under the old name from PanoplySuite's own saved file (the global changed since this file loaded), it is
+-- ours. It becomes the table of the new name when there is none yet, or only the empty one the engine made for itself while
+-- its files loaded (B.Snapshot; a table already saved under the new name is never replaced), and the old global goes back to what it was before (nil, or another add-on's own table: never touched).
+-- Panoply Suite's own tables get their top-level keys renamed the same way. -> the new names that were filled
+function B.Migrate()
   local took = {}
-  if not (standIn() and realLoaded(B.STANDIN)) then return took end
-  for _, n in ipairs(B.SAVED) do
-    if rawget(G, n) == nil and type(early[n]) == "table" then
-      G[n] = early[n]
-      took[#took + 1] = n
+  for i, old in ipairs(B.SAVED_OLD) do
+    local new = B.SAVED[i]
+    local mine = rawget(G, old)
+    if mine ~= early[i] then
+      G[old] = early[i]
+      local cur = rawget(G, new)
+      if type(mine) == "table" and (cur == nil or (made[i] ~= nil and cur == made[i])) then
+        G[new] = renameInside(mine)
+        took[#took + 1] = new
+      end
     end
   end
-  B.tookOver = took
+  for _, name in ipairs(B.OWN_SAVED) do
+    local t = rawget(G, name)
+    if type(t) == "table" then
+      local moves
+      for k in pairs(t) do
+        if type(k) == "string" and newWord(k) ~= k then moves = moves or {}; moves[#moves + 1] = k end
+      end
+      for _, k in ipairs(moves or {}) do
+        local nk, v = newWord(k), t[k]
+        t[k] = nil
+        if t[nk] == nil then t[nk] = v end
+      end
+    end
+  end
+  B.migrated = took
   return took
-end
-
--------------------------------------------------------------------------------
--- Old folders of the earlier bundle left next to Panoply Suite (a zip unpacked over an older install)
--------------------------------------------------------------------------------
-function B.Leftovers()
-  local out = {}
-  local info = realAddOns and realAddOns.GetAddOnInfo
-  if not info then return out end
-  for _, f in ipairs(order) do
-    if f.name ~= B.STANDIN then
-      local ok, n, _, _, _, reason = pcall(info, f.name)
-      if ok and n and reason ~= "MISSING" then out[#out + 1] = f.name end
-    end
-  end
-  return out
-end
-
-local function turnOffLeftovers(list)
-  local off = realAddOns and realAddOns.DisableAddOn
-  if not off then return end
-  for _, n in ipairs(list) do pcall(off, n) end
 end
 
 -------------------------------------------------------------------------------
@@ -251,8 +316,8 @@ function B.OnStart(fn)
   if started then safely(fn) else afterStart[#afterStart + 1] = fn end
 end
 
--- 0.9.6.1 hotfix (Nov 17 2026): Polestar's install check (Core/Data.lua CheckInstall, at login) counts Polestar_Codex as
--- required, and the release we bundle (Pieces.lua) has no Polestar_Codex or Polestar_QuestDB, so every complete install was told
+-- 0.9.6.1 hotfix (Nov 17 2026): the engine's install check (Core/Data.lua CheckInstall, at login) counts its Codex folder as
+-- required, and the release we bundle (Pieces.lua) has no Codex or QuestDB folder, so every complete install was told
 -- it was "mixed or incomplete". A required folder the bundled release does not have is not missing from this install: it is
 -- left out of the check's missing list. Every folder the release has, and every stale version, is still reported.
 local function fitInstallCheck(core)
@@ -260,7 +325,7 @@ local function fitInstallCheck(core)
   local check = type(D) == "table" and D.CheckInstall
   if type(check) ~= "function" then return end
   D.CheckInstall = function(...)
-    -- 0.9.9.1: Polestar 0.4.2.1's check returns a fourth value (how many Polestar_Nav_R folders of 0.4.2 are still in the AddOns
+    -- 0.9.9.1: the engine's 0.4.2.1 check returns a fourth value (how many Nav_R folders of 0.4.2 are still in the AddOns
     -- list, which its login code compares with 0); the wrapper hands every value on, not just the first three
     local missing, stale, retired, regions = check(...)
     if type(missing) ~= "table" then return missing, stale, retired, regions end
@@ -275,20 +340,15 @@ end
 function B.Start()
   if started then return end
   started = true
-  if B.off == "own" then
-    -- the player's own Polestar loaded before us with its own saved tables; PanoplySuite's copy of the names must not
-    -- replace them (the game just loaded PanoplySuite's saved variables over the globals)
-    for _, n in ipairs(B.SAVED) do if early[n] ~= nil then G[n] = early[n] end end
-  end
+  -- on every game: the old globals are handed back and the saved tables moved, whether or not the engine runs here
+  B.Migrate()
   if not B.off then
     B.ShareMixins()
-    B.Takeover()
-    B.leftovers = B.Leftovers()
-    if #B.leftovers > 0 then turnOffLeftovers(B.leftovers) end
     local core
     for _, f in ipairs(order) do if f.mode == "now" then core = f end end
     if core then
       loaded[core.name] = true
+      B.OwnCommands()
       fireLoaded(core.name)
       fitInstallCheck(core)
     end
@@ -302,7 +362,7 @@ function B.Start()
 end
 
 -------------------------------------------------------------------------------
--- What Polestar's files see as C_AddOns and CreateFrame
+-- What the engine's files see as C_AddOns and CreateFrame
 -------------------------------------------------------------------------------
 function B.CreateFrame(...)
   local fr = realCreateFrame(...)
@@ -311,7 +371,7 @@ function B.CreateFrame(...)
 end
 
 
--- The list Polestar sees: the game's add-ons (but a leftover old folder of the same name as one of ours), then its 27
+-- The list the engine sees: the game's add-ons (but a leftover old folder of the same name as one of ours), then its 27
 local list
 local function buildList()
   list = {}
@@ -412,17 +472,17 @@ end
 -- anything else is the game's own
 B.C_AddOns = setmetatable(V, { __index = function(_, k) return realAddOns and realAddOns[k] end })
 
--- The environment of Polestar's files: C_AddOns and CreateFrame are the two above; every other name is read from _G
+-- The environment of the engine's files: C_AddOns and CreateFrame are the two above; every other name is read from _G
 -- (two table lookups, no function call) and every global the files set goes into _G, as before.
 local own = setmetatable({ C_AddOns = B.C_AddOns, CreateFrame = B.CreateFrame }, { __index = G })
 B.env = setmetatable({}, { __index = own, __newindex = G })
 
 -- 0.9.6 phase I: the game builds what some of its functions return (C_Map.GetPlayerMapPosition's and GetWorldPosFromMapPos's
 -- Vector2D, a colour, an item location) from a mixin it looks up BY NAME in the calling code's own environment, read raw: the
--- lookup does not follow __index. In the environment above every global is reached through __index, so in Polestar's files
+-- lookup does not follow __index. In the environment above every global is reached through __index, so in the engine's files
 -- those functions failed with "unable to find mixin or metatable (Vector2DMixin)" (our WoW Forever error log, Nov 16-17 2026,
--- 19 times at Polestar's Core/Compat.lua:826 and :880). One of them was the login's guide pick: a fresh character got no guide
--- ("No guide here yet"). So the game's mixins are put in the environment itself, the same tables (read only: Polestar's files
+-- 19 times at the engine's Core/Compat.lua:826 and :880). One of them was the login's guide pick: a fresh character got no guide
+-- ("No guide here yet"). So the game's mixins are put in the environment itself, the same tables (read only: the engine's files
 -- assign no global named ...Mixin), once now (the game's own are all defined before any add-on loads) and again at Start for a
 -- game add-on loaded in between.
 function B.ShareMixins()
@@ -439,20 +499,11 @@ B.ShareMixins()
 
 -------------------------------------------------------------------------------
 -- Panoply Suite's ADDON_LOADED. Core/Migrate.lua's handler (the first one Panoply Suite registers) calls Start too, so
--- Polestar is up before any of Panoply Suite's own handlers, whatever order the game sends the event to frames in.
+-- the engine is up before any of Panoply Suite's own handlers, whatever order the game sends the event to frames in.
 -------------------------------------------------------------------------------
 local ev = realCreateFrame("Frame")
 ev:RegisterEvent("ADDON_LOADED")
-ev:RegisterEvent("PLAYER_LOGIN")
 ev:SetScript("OnEvent", function(self, event, name)
-  if event == "ADDON_LOADED" then
-    if name == B.ADDON then B.Start() end
-  elseif event == "PLAYER_LOGIN" then
-    self:UnregisterEvent("PLAYER_LOGIN")
-    local l = B.leftovers
-    if l and #l > 0 and G.DEFAULT_CHAT_FRAME then
-      G.DEFAULT_CHAT_FRAME:AddMessage(("|cff0093b2Panoply Suite|r: %d old guide engine folders from an earlier version are still in Interface/AddOns (%s). Panoply Suite carries them inside its own folder now, so they are turned off. Close the game and delete them."):format(#l, table.concat(l, ", ")))
-    end
-  end
+  if event == "ADDON_LOADED" and name == B.ADDON then B.Start() end
 end)
 B.eventFrame = ev

@@ -3,7 +3,7 @@
 ## Notes: Saved data for Panoply Suite. Does nothing on its own.
 ## Author: Panoply Suite
 ## X-Publisher: Ostrowski Holdings LLC
-## Version: 0.9.9.4
+## Version: 0.9.9.6
 ## DefaultState: enabled
 ## X-License: GPL-3.0-only (see LICENSE)
 ## X-Flavor: WoW Forever
